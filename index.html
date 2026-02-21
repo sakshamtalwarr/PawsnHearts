@@ -24,43 +24,44 @@
   
   <link rel="icon" type="image/jpeg" href="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=150&h=150">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    /* FIX: Replaced 'hidden' with 'clip' to stop the Safari freeze bug */
-    html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: clip; }
-    /* Animated "View Profile" Hint */
-.view-details-hint {
-  display: inline-block;
-  margin-top: 12px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: var(--primary);
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-
-.scroll-card:hover .view-details-hint {
-  opacity: 1;
-}
-
-.view-details-hint i {
-  display: inline-block;
-  font-style: normal;
-  animation: bounceRight 1.5s infinite;
-}
-
-@keyframes bounceRight {
-  0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(3px); }
-}
+<style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
     
     :root { --primary: #f39c12; --primary-hover: #e67e22; --secondary: #2c3e50; --accent: #e74c3c; --success: #2ecc71; --bg: #ffe9be; --text: #333; --card-bg: #ffffff; }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; scroll-behavior: smooth; }
+    
+    /* FIX: Only ONE body rule now, using 'clip' instead of 'hidden' to stop Safari freezing */
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: clip; }
+    
     h1, h2, h3 { color: var(--secondary); margin-top: 0; }
+
+    /* Animated "View Profile" Hint */
+    .view-details-hint {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--primary);
+      opacity: 0.8;
+      transition: opacity 0.3s;
+    }
+
+    .scroll-card:hover .view-details-hint {
+      opacity: 1;
+    }
+
+    .view-details-hint i {
+      display: inline-block;
+      font-style: normal;
+      animation: bounceRight 1.5s infinite;
+    }
+
+    @keyframes bounceRight {
+      0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(3px); }
+    }
     
     /* =========================================
        1. THE LIQUID GLASS NAVBAR & LOGO
@@ -281,6 +282,9 @@
       /* THIS IS THE CRITICAL FIX: Stops mobile processors from freezing on tab clicks */
       html, body { scroll-behavior: auto !important; }
       
+      /* Disable fade-in transition on mobile to stop jump-rendering crashes */
+      .fade-in-section { transition: none !important; opacity: 1 !important; transform: none !important; }
+
       .hero h1 { font-size: 3rem; }
       nav { 
         top: 10px; 
@@ -344,6 +348,7 @@
     }
 
     .loader-hidden { opacity: 0; visibility: hidden; }
+    
     /* Ledger Enhancements */
     .ledger-header { margin-bottom: 25px; text-align: center; }
     
@@ -356,6 +361,7 @@
     @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    
     /* Welcome Screen Stats */
     .welcome-stats {
       display: flex;
@@ -390,7 +396,7 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
- </style>
+</style>
 </head>
 <body>
   <div id="loader-screen">
