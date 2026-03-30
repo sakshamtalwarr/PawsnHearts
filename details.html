@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animal Details | Paws&Hearts</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: "Poppins", "Nunito", sans-serif;
+        background: #ffe9be;
+        color: #333;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .back-btn {
+        margin-bottom: 20px;
+        display: inline-block;
+        text-decoration: none;
+        font-weight: 700;
+        color: #f39c12;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border-radius: 25px;
+        padding: 25px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+      }
+
+      .title {
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: #2c3e50;
+      }
+      .section p {
+        line-height: 1.8;
+        font-size: 1.05rem;
+        color: #444;
+      }
+
+      .tags {
+        margin-bottom: 15px;
+      }
+
+      .tags span {
+        background: #f0f0f0;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-right: 6px;
+      }
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .gallery img,
+      .gallery video {
+        width: 100%;
+        height: 180px;
+        border-radius: 12px;
+        object-fit: cover;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+        cursor: pointer;
+      }
+
+      .gallery img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        display: block;
+        width: fit-content;
+        min-width: 220px;
+        margin: 25px auto 0 auto;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 30px;
+        text-decoration: none;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <a href="index.html" class="back-btn">← Back</a>
+
+      <div class="card">
+        <div id="title" class="title">Loading...</div>
+        <div id="tags" class="tags"></div>
+
+        <div
+          id="heroImage"
+          style="
+            width: 100%;
+            height: 260px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <span style="color: #999; font-weight: 700">Loading image...</span>
+        </div>
+
+        <div id="gallery" class="gallery"></div>
+
+        <div class="section">
+          <strong>About</strong>
+          <p id="desc"></p>
+        </div>
+
+        <div id="treatmentBox" class="section" style="display: none">
+          <strong>Medical Details</strong>
+          <p id="treatment"></p>
+        </div>
+
+        <a id="actionBtn" class="btn" href="#">Loading...</a>
+      </div>
+    </div>
+
+    <script>
+      const sheetId = "11xJ7r0Q0iRRB3TxdFkdB4qjzHoIfnI8g6zW5ZrALbfU";
+
+      const params = new URLSearchParams(window.location.search);
+      const sheet = params.get("sheet");
+      const id = params.get("id"); // use unique id (name for now)
+
+      function getDriveFileId(url) {
+        if (!url) return null;
+        const m =
+          url.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
+          url.match(/id=([a-zA-Z0-9_-]+)/);
+        return m && m[1] ? m[1] : null;
+      }
+
+      function getDirectImgUrl(url) {
+        if (!url) return "";
+
+        let cleanUrl = String(url).trim();
+
+        // ❌ Ignore Drive folders completely
+        if (cleanUrl.includes("/folders/")) return "";
+
+        if (cleanUrl.includes("drive.google.com")) {
+          const match =
+            cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
+            cleanUrl.match(/id=([a-zA-Z0-9_-]+)/);
+
+          if (match && match[1]) {
+            return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+          }
+
+          return ""; // fallback if ID extraction fails
+        }
+
+        return cleanUrl;
+      }
+
+      function safeVal(cell) {
+        if (!cell) return "";
+        if (cell.v === null || cell.v === undefined) return "";
+        return String(cell.v);
+      }
+
+      function parseCSV(text) {
+        const rows = text.split("\n").map((r) => r.split(","));
+        const headers = rows.shift();
+
+        return rows.map((row) => {
+          let obj = {};
+          headers.forEach((h, i) => {
+            obj[h.trim()] = row[i] ? row[i].trim() : "";
+          });
+          return obj;
+        });
+      }
+
+      fetch(
+        `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheet}`,
+      )
+        .then((res) => res.text())
+        .then((text) => {
+          let jsonText = text.substring(
+            text.indexOf("{"),
+            text.lastIndexOf("}") + 1,
+          );
+          let data;
+          try {
+            data = JSON.parse(jsonText);
+          } catch (e) {
+            console.error("JSON parse failed", e, jsonText);
+            document.getElementById("title").innerText = "Error loading data";
+            return;
+          }
+          const rows = data.table.rows.slice().reverse();
+
+          // Find row by ID (name used as unique identifier)
+          const decodedId = decodeURIComponent(id || "").trim();
+
+          const row = rows.find((r) => {
+            if (!r || !r.c || !r.c[0]) return false;
+
+            const nameVal = String(r.c[0].v || "").trim();
+
+            return nameVal === decodedId;
+          });
+
+          if (!row) {
+            document.getElementById("title").innerText = "Animal not found";
+            return;
+          }
+          if (!row || !row.c) {
+            console.error("Invalid row data", row);
+            return;
+          }
+
+          // 1. Safely extract all data using Optional Chaining
+          const name = String(row.c[0]?.v || "").trim();
+          const tags = String(row.c[1]?.v || "").trim();
+          const thumbnail = String(row.c[3]?.v || "");
+          const status = String(row.c[5]?.v || "")
+            .toLowerCase()
+            .trim();
+          const gallery = String(row.c[7]?.v || "");
+          const treatment = String(row.c[8]?.v || "");
+          const funds = String(row.c[10]?.v || "");
+
+          // Grab Long Desc, fallback to Short Desc, fallback to default text
+          let finalDesc = String(
+            row.c[6]?.v || row.c[2]?.v || "No description available.",
+          ).trim();
+
+          // 2. Inject Basic Info
+          document.getElementById("title").innerText = name;
+
+          // Inject Description (Converts Google Sheet line breaks into actual HTML paragraphs)
+          document.getElementById("desc").innerHTML = finalDesc.replace(
+            /\n/g,
+            "<br><br>",
+          );
+
+          // 3. Ensure button never stays in loading state
+          const initBtn = document.getElementById("actionBtn");
+          if (initBtn && initBtn.innerText === "Loading...") {
+            initBtn.innerText = "Contact ❤️";
+            initBtn.href = "https://wa.me/917217739614";
+          }
+
+          // 4. Inject Tags
+          const tagsDiv = document.getElementById("tags");
+          if (tags) {
+            tags.split(",").forEach((t) => {
+              if (!t.trim()) return;
+              const span = document.createElement("span");
+              span.innerText = t.trim();
+              tagsDiv.appendChild(span);
+            });
+          }
+          // --- 5. BUILD HERO IMAGE & GALLERY ---
+          const galleryDiv = document.getElementById("gallery");
+          const heroDiv = document.getElementById("heroImage");
+          let rawUrls = [];
+
+          if (gallery) {
+            rawUrls = gallery.split(",").map((u) => u.trim());
+          } else if (thumbnail) {
+            rawUrls = [thumbnail];
+          }
+
+          const items = rawUrls
+            .filter((u) => u)
+            .map((u) => ({
+              raw: u,
+              id: getDriveFileId(u),
+              isFolder: u.includes("/folders/"),
+            }));
+
+          if (items.length > 0) {
+            // 1. HERO IMAGE (Top large image)
+            const first = items[0];
+            heroDiv.innerHTML = "";
+
+            if (first.isFolder) {
+              const folderMatch = first.raw.match(/folders\/([a-zA-Z0-9_-]+)/);
+              if (folderMatch) {
+                const iframe = document.createElement("iframe");
+                iframe.src = `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#grid`;
+                iframe.style.width = "100%";
+                iframe.style.height = "100%";
+                iframe.style.border = "none";
+                heroDiv.appendChild(iframe);
+                // FIX: Removed a rogue 'return;' here so the rest of the page still loads!
+              }
+            } else if (first.raw.toLowerCase().includes(".mp4") && first.id) {
+              const vid = document.createElement("video");
+              vid.src = `https://drive.google.com/uc?export=download&id=${first.id}`;
+              vid.controls = true;
+              vid.style.width = "100%";
+              vid.style.height = "100%";
+              vid.style.objectFit = "cover";
+              heroDiv.appendChild(vid);
+            } else {
+              const heroImg = document.createElement("img");
+              heroImg.src = getDirectImgUrl(first.raw);
+              heroImg.style.width = "100%";
+              heroImg.style.height = "100%";
+              heroImg.style.objectFit = "cover";
+              heroImg.onerror = () => {
+                heroDiv.innerHTML =
+                  '<span style="color:#999">Image failed to load</span>';
+              };
+              heroDiv.appendChild(heroImg);
+            }
+
+            // 2. GALLERY (Small swipeable images)
+            if (items.length > 1) {
+              const hint = document.createElement("div");
+              hint.innerText = "← Swipe for more photos →";
+              hint.style.textAlign = "center";
+              hint.style.fontSize = "0.8rem";
+              hint.style.color = "#888";
+              hint.style.marginBottom = "8px";
+              galleryDiv.parentNode.insertBefore(hint, galleryDiv);
+
+              // FIX: Changed slice(0, 6) to slice(1, 6) so it safely skips the first image!
+              items.slice(1, 6).forEach((item) => {
+                if (item.isFolder) {
+                  const folderMatch = item.raw.match(
+                    /folders\/([a-zA-Z0-9_-]+)/,
+                  );
+                  if (folderMatch) {
+                    const iframe = document.createElement("iframe");
+                    iframe.src = `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#grid`;
+                    iframe.loading = "lazy";
+                    iframe.style.width = "100%";
+                    iframe.style.height = "250px";
+                    iframe.style.border = "none";
+                    iframe.style.borderRadius = "10px";
+                    iframe.style.flex = "0 0 80%";
+                    galleryDiv.appendChild(iframe);
+                  }
+                } else if (item.raw.toLowerCase().includes(".mp4") && item.id) {
+                  const video = document.createElement("video");
+                  video.src = `https://drive.google.com/uc?export=download&id=${item.id}`;
+                  video.muted = true;
+                  video.loop = true;
+                  video.playsInline = true;
+                  video.preload = "metadata";
+                  video.controls = false;
+                  video.style.height = "250px";
+                  video.style.borderRadius = "10px";
+                  video.style.flex = "0 0 80%";
+                  video.addEventListener("mouseenter", () => video.play());
+                  video.addEventListener("mouseleave", () => video.pause());
+                  video.addEventListener("touchstart", () => video.play());
+                  galleryDiv.appendChild(video);
+                } else {
+                  const img = document.createElement("img");
+                  img.src = getDirectImgUrl(item.raw);
+                  img.loading = "lazy";
+                  img.onerror = () => img.remove();
+                  img.onclick = () => openImageFullscreen(img.src);
+                  galleryDiv.appendChild(img);
+                }
+              });
+            }
+          } else {
+            heroDiv.innerHTML =
+              '<span style="color:#999; font-weight:700">No images available (check sheet links)</span>';
+          }
+
+          if (treatment || funds) {
+            document.getElementById("treatmentBox").style.display = "block";
+            document.getElementById("treatment").innerHTML =
+              treatment +
+              (funds ? `<br><br><strong>Funds needed: ${funds}</strong>` : "");
+          }
+
+          const btn = document.getElementById("actionBtn");
+
+          // Normalize values
+          const sheetType = (sheet || "").toString().trim();
+          const isCompleted =
+            status.includes("adopted") ||
+            status.includes("treated") ||
+            status.includes("recovered");
+
+          if (isCompleted) {
+            btn.style.display = "block";
+            btn.innerText = `View Success Story ✨`;
+            btn.href = "#";
+            btn.onclick = (e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            };
+          } else {
+            btn.style.display = "block";
+
+            if (sheetType.toLowerCase() === "adoption") {
+              btn.innerText = `Adopt ${name} ❤️`;
+              btn.href = `https://wa.me/917217739614?text=${encodeURIComponent(`Hi! I am interested in adopting ${name}`)}`;
+              btn.target = "_blank";
+            } else {
+              // Redirect to donation section on homepage WITH CONTEXT
+              btn.innerText = `Donate for ${name} 💛`;
+              btn.href = `/#donate?animal=${encodeURIComponent(name)}`;
+            }
+          }
+        });
+
+      function openImageFullscreen(src) {
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
+        overlay.style.background = "rgba(0,0,0,0.95)";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.zIndex = "2000";
+        overlay.style.overflow = "hidden";
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.maxWidth = "90%";
+        img.style.maxHeight = "90%";
+        img.style.borderRadius = "10px";
+        img.style.transition = "transform 0.2s ease";
+
+        let scale = 1;
+
+        overlay.addEventListener("wheel", (e) => {
+          e.preventDefault();
+          scale += e.deltaY * -0.001;
+          scale = Math.min(Math.max(1, scale), 4);
+          img.style.transform = `scale(${scale})`;
+        });
+
+        // pinch zoom
+        let startDist = 0;
+
+        overlay.addEventListener("touchstart", (e) => {
+          if (e.touches.length === 2) {
+            startDist = Math.hypot(
+              e.touches[0].clientX - e.touches[1].clientX,
+              e.touches[0].clientY - e.touches[1].clientY,
+            );
+          }
+        });
+
+        overlay.addEventListener("touchmove", (e) => {
+          if (e.touches.length === 2) {
+            const newDist = Math.hypot(
+              e.touches[0].clientX - e.touches[1].clientX,
+              e.touches[0].clientY - e.touches[1].clientY,
+            );
+
+            scale += (newDist - startDist) * 0.005;
+            scale = Math.min(Math.max(1, scale), 4);
+            img.style.transform = `scale(${scale})`;
+
+            startDist = newDist;
+          }
+        });
+
+        overlay.appendChild(img);
+        overlay.onclick = () => document.body.removeChild(overlay);
+        document.body.appendChild(overlay);
+      }
+
+      // window.addEventListener('load', function () {
+      //   const loader = document.getElementById('loader-screen');
+      //   const bar = document.getElementById('load-bar');
+      //   if (!loader || !bar) return;
+      //   bar.style.width = '0%';
+      //   loader.style.display = 'flex';
+      //   let progress = 0;
+      //   const interval = setInterval(() => {
+      //     progress += Math.random() * 20;
+      //     if (progress > 100) progress = 100;
+      //     bar.style.width = progress + '%';
+      //     if (progress === 100) {
+      //       clearInterval(interval);
+      //       setTimeout(() => {
+      //         loader.classList.add('loader-hidden');
+      //         setTimeout(() => {
+      //           loader.style.display = 'none';
+      //         }, 1000);
+      //       }, 300);
+      //     }
+      //   }, 200);
+      // });
+
+      window.addEventListener("pageshow", function (event) {
+        const loader = document.getElementById("loader-screen");
+        const bar = document.getElementById("load-bar");
+
+        // Detect navigation type
+        const navEntries = performance.getEntriesByType("navigation");
+        const navType = navEntries.length ? navEntries[0].type : "";
+
+        const isBackForward = event.persisted || navType === "back_forward";
+        const isReload = navType === "reload";
+
+        // 👉 Skip loader when coming back from another page
+        if (isBackForward && !isReload) {
+          if (loader) {
+            loader.classList.add("loader-hidden");
+            loader.style.display = "none";
+          }
+          document.body.style.overflow = "";
+          document.body.style.overflowX = "hidden";
+          return;
+        }
+
+        // 👉 Show loader ONLY on first load or reload
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += Math.random() * 30;
+          if (progress > 100) progress = 100;
+
+          if (bar) bar.style.width = progress + "%";
+
+          if (progress === 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              if (loader) {
+                loader.classList.add("loader-hidden");
+                document.body.style.overflow = "";
+                document.body.style.overflowX = "hidden";
+                setTimeout(() => {
+                  loader.style.display = "none";
+                }, 1000);
+              }
+            }, 400);
+          }
+        }, 200);
+      });
+      // Center focus effect for gallery carousel
+      const galleryEl = document.getElementById("gallery");
+      if (galleryEl) {
+        galleryEl.addEventListener("scroll", () => {
+          const rect = galleryEl.getBoundingClientRect();
+          const center = rect.left + rect.width / 2;
+
+          galleryEl.querySelectorAll("img, video, iframe").forEach((el) => {
+            const r = el.getBoundingClientRect();
+            const elCenter = r.left + r.width / 2;
+            const dist = Math.abs(center - elCenter);
+
+            if (dist < 120) {
+              el.style.transform = "scale(1.05)";
+              el.style.boxShadow = "0 12px 30px rgba(0,0,0,0.2)";
+            } else {
+              el.style.transform = "scale(1)";
+              el.style.boxShadow = "0 6px 15px rgba(0,0,0,0.1)";
+            }
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
