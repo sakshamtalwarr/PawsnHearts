@@ -32,7 +32,7 @@
     
     /* FIX: Only ONE body rule now, using 'clip' instead of 'hidden' to stop Safari freezing */
     html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: clip; }
+    body { margin: 0; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
     
     h1, h2, h3 { color: var(--secondary); margin-top: 0; }
 
@@ -205,15 +205,36 @@
     .dashboard { padding: 40px 20px; text-align: center; background: var(--card-bg); margin: -60px auto 40px; max-width: 800px; border-radius: 20px; position: relative; z-index: 2; box-shadow: 0 15px 40px rgba(0,0,0,0.08); border-top: 5px solid var(--success); }
     .total-raised { font-size: 4rem; font-weight: 800; color: var(--success); margin: 10px 0; display: inline-block; }
     
-    .section-container { max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
+    .section-container {overflow: visible; max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
     .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 15px; }
     .section-subtitle { text-align: center; color: #7f8c8d; font-size: 1.1rem; margin-bottom: 40px; }
 
     /* Scroll Carousels */
-    .horizontal-scroll-container { display: flex; overflow-x: auto; gap: 25px; padding: 15px 5px 35px 5px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+   .horizontal-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: visible;
+  gap: 25px;
+  padding: 15px 20px 35px 20px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  justify-content: flex-start;
+}
+
+.horizontal-scroll-container.single-card {
+  justify-content: center;
+}
+
     .horizontal-scroll-container::-webkit-scrollbar { display: none; }
-    .scroll-card { flex: 0 0 320px; scroll-snap-align: start; background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: 0.3s; cursor: pointer; position: relative; }
+    .scroll-card { flex: 0 0 320px; scroll-snap-align: center; background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: 0.3s; cursor: pointer; position: relative; flex-shrink: 0;}
     .scroll-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.12); }
+
+    /* Center focus effect */
+    .scroll-card.active-center {
+      transform: scale(1.05);
+      box-shadow: 0 20px 40px rgba(243, 156, 18, 0.35);
+      z-index: 5;
+    }
     .media-wrapper { width: 100%; height: 250px; position: relative; overflow: hidden; background: #000; }
     .media-wrapper img, .media-wrapper video { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
     .scroll-card:hover .media-wrapper img, .scroll-card:hover .media-wrapper video { transform: scale(1.05); }
@@ -221,15 +242,91 @@
     .dog-info { padding: 25px; text-align: center; }
     .dog-tags span { display: inline-block; background: #f0f0f0; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; color: #555; margin: 2px; font-weight: 600;}
 
+    .badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      z-index: 3;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .success-adopt .badge {
+  background: #2ecc71 !important;
+}
+
+.success-treat .badge {
+  background: #3498db !important;
+}
+    .adopt-badge { background: #2ecc71; color: #fff; }
+    .urgent-badge-custom { background: #e74c3c; color: #fff; }
+
+    /* Adoption vs Treatment Theming */
+    .adopt-theme .scroll-card {
+      border-top: 5px solid #2ecc71;
+      background: linear-gradient(180deg, #ffffff 0%, #f3fff6 100%);
+    }
+
+    .adopt-theme .dog-info h3 {
+      color: #27ae60;
+    }
+
+    .adopt-theme .view-details-hint {
+      color: #27ae60;
+    }
+
+    .treatment-theme .scroll-card {
+      border-top: 5px solid #e74c3c;
+      background: linear-gradient(180deg, #ffffff 0%, #fff5f5 100%);
+    }
+
+    .treatment-theme .dog-info h3 {
+      color: #c0392b;
+    }
+
+    .treatment-theme .view-details-hint {
+      color: #c0392b;
+    }
+
     /* MODAL OVERLAY STYLES */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.3s; }
-    .modal-overlay.hidden { opacity: 0; pointer-events: none; }
+    .modal-overlay.hidden {
+  display: none;
+}
     .modal-content { background: white; padding: 35px; border-radius: 20px; max-width: 650px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.3); -webkit-overflow-scrolling: touch; }
     .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2.5rem; cursor: pointer; color: #aaa; line-height: 1; transition: 0.2s; }
     .close-btn:hover { color: var(--accent); }
     
-    .modal-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
-    .modal-gallery { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
+    .modal-gallery {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.03);
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal-gallery img, .modal-gallery iframe {
+      flex: 0 0 85%;
+      max-width: 85%;
+      height: 260px;
+      object-fit: cover;
+      border-radius: 10px;
+      scroll-snap-align: center;
+    }
+
+    .gallery-hint {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      text-align: center;
+      font-weight: 700;
+    }
     .treatment-box { background: #fff5f5; border-left: 5px solid var(--accent); padding: 20px; border-radius: 10px; margin: 20px 0; }
     .treatment-box h4 { margin: 0 0 10px 0; color: var(--accent); }
     .receipt-btn { display: inline-flex; align-items: center; gap: 8px; background: white; color: var(--secondary); padding: 10px 15px; border-radius: 8px; font-weight: bold; text-decoration: none; margin-top: 15px; border: 1px solid #ddd; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -238,10 +335,39 @@
     /* Donation Section */
     .donate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
     .donate-card { background: #f8f9fa; padding: 30px; border-radius: 15px; text-align: center; border-top: 5px solid var(--primary); }
+
+    .donate-highlight {
+      animation: donateGlow 1.5s ease-in-out 2;
+      box-shadow: 0 0 25px rgba(46, 204, 113, 0.8);
+      border: 2px solid #2ecc71;
+    }
+
+    @keyframes donateGlow {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
     .amt-input { width: 100%; font-size: 1.5rem; padding: 15px; text-align: center; border: 2px solid #ddd; border-radius: 10px; margin-bottom: 15px; color: var(--primary); font-weight: bold; box-sizing: border-box; }
     .pay-btn { background: #27ae60; color: white; padding: 15px 20px; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
     .wa-btn, .form-btn { display: block; color: white; padding: 15px 20px; border-radius: 10px; text-decoration: none; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; transition: 0.3s; }
     .wa-btn { background: #25D366; } .form-btn { background: #673AB7; }
+
+    /* Contextual Donation Banner */
+    .donation-context-banner {
+      background: linear-gradient(135deg, #fff7e6, #ffe9be);
+      border: 2px dashed var(--primary);
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--secondary);
+      display: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .donation-context-banner span {
+      color: var(--primary);
+    }
 
     /* Transparency Ledger */
     .table-container { overflow-x: auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 20px; }
@@ -271,9 +397,57 @@
 
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in-section { opacity: 0; transform: translateY(20px); transition: 0.8s ease-out; will-change: opacity, visibility; }
-    .fade-in-section.is-visible { opacity: 1; transform: none; }
+    .fade-in-section {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-in-section.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
     .hidden { display: none !important; }
+
+    /* Enhanced Modal Readability */
+    .modal-content h2 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    .modal-content p {
+      line-height: 1.7;
+    }
+
+    .modal-section {
+      background: #f9f9f9;
+      padding: 18px 20px;
+      border-radius: 12px;
+      margin-top: 18px;
+      text-align: left;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .modal-section h4 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+      color: var(--secondary);
+    }
+
+    .modal-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+
+    .modal-tags span {
+      background: #f0f0f0;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
 
     /* =========================================
        3. RESPONSIVE MOBILE ADJUSTMENTS
@@ -282,8 +456,12 @@
       /* THIS IS THE CRITICAL FIX: Stops mobile processors from freezing on tab clicks */
       html, body { scroll-behavior: auto !important; }
       
-      /* Disable fade-in transition on mobile to stop jump-rendering crashes */
-      .fade-in-section { transition: none !important; opacity: 1 !important; transform: none !important; }
+      /* Improved fade-in for mobile: keep animation but make it lighter */
+      .fade-in-section { 
+        transition: opacity 0.6s ease, transform 0.6s ease !important;
+        opacity: 0;
+        transform: translateY(30px);
+      }
 
       .hero h1 { font-size: 3rem; }
       nav { 
@@ -347,8 +525,7 @@
       border-radius: 10px; transition: width 0.4s ease; 
     }
 
-    .loader-hidden { opacity: 0; visibility: hidden; }
-    
+   .loader-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
     /* Ledger Enhancements */
     .ledger-header { margin-bottom: 25px; text-align: center; }
     
@@ -390,15 +567,207 @@
     }
     
     .stat-box label {
+    /* Infinite scroll for success stories */
+    
+    
+
+ 
       font-size: 0.75rem;
       color: var(--secondary);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+    /* Native Infinite Carousel */
+    #success-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 25px;
+      padding: 15px 20px 35px 20px;
+      scroll-snap-type: x mandatory;
+      scroll-padding: 50%;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+    #success-container::-webkit-scrollbar {
+      display: none; /* Hide scrollbar Safari/Chrome */
+    }
+    /* Netflix-style gradient edges */
+#success {
+  position: relative;
+  overflow: hidden;
+}
+
+#success::before,
+#success::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 80px;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+#success::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg), transparent);
+}
+
+#success::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg), transparent);
+}
+
+/* Success Section Navigation and Animation */
+.success-nav-wrapper {
+  position: relative;
+}
+
+  .nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    z-index: 10;
+
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: all 0.25s ease;
+  }
+
+.nav-btn.left {
+  left: 10px;
+}
+
+.nav-btn.right {
+  right: 10px;
+}
+
+.nav-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.success-nav-wrapper::before,
+.success-nav-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 80px;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.success-nav-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg), transparent);
+}
+
+.success-nav-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg), transparent);
+}
+
+.nav-btn {
+  z-index: 15;
+}
+
+/* Entry animation */
+.success-animate {
+  opacity: 0;
+  transform: translateX(80px);
+  transition: all 0.6s ease;
+}
+
+.success-animate.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* --- Skeleton Loading Animation --- */
+    .skeleton-card {
+      flex: 0 0 320px;
+      height: 400px;
+      background: var(--card-bg);
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    
+    .skeleton-img { width: 100%; height: 250px; background: #e0e0e0; }
+    .skeleton-text { height: 20px; background: #e0e0e0; margin: 20px 25px 10px; border-radius: 4px; width: 60%; }
+    .skeleton-text.short { width: 40%; margin-top: 10px; }
+    
+    /* The shimmering light effect */
+    .skeleton-card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer { 100% { left: 100%; } }
+   /* --- Flawless Skeleton Loading Animation --- */
+    .skeleton-wrapper { display: flex; gap: 25px; padding-bottom: 20px; }
+    .skeleton-card {
+      flex: 0 0 320px;
+      height: 380px;
+      background: var(--card-bg);
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .skeleton-img { width: 100%; height: 250px; background: #e0e0e0; }
+    .skeleton-content { padding: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    .skeleton-text { height: 20px; background: #e0e0e0; border-radius: 6px; width: 80%; }
+    .skeleton-text.short { width: 50%; }
+    
+    /* The shimmering light effect passing over the cards */
+    .skeleton-card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 100% { left: 100%; } }
+    
+    .loading-message {
+      position: absolute;
+      left: 20px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      animation: pulse 1.5s infinite;
+      z-index: 10;
+      margin-top: -30px;
+    }
 </style>
 </head>
 <body>
+
+</div>
   <div id="loader-screen">
   <div class="loader-content">
     <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=150&h=150" alt="Logo" class="loader-logo">
@@ -455,9 +824,29 @@
     <div class="total-raised" id="counter">₹0</div>
   </div>
 
+ <div id="success" class="section-container fade-in-section">
+    <h2 class="section-title">Success Stories ❤️</h2>
+    <p class="section-subtitle">These animals are now safe, healthy, and loved 🐶</p>
+    <div style="text-align:center; margin-bottom:15px;">
+      <button onclick="launchConfetti()" style="padding:6px 14px; border-radius:20px; border:none; background:#2ecc71; color:white; font-weight:700; cursor:pointer; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);">
+        🎉 Celebrate
+      </button>
+    </div>
+
+    <div class="success-nav-wrapper">
+      <button class="nav-btn left" onclick="scrollSuccess(-1)">❮</button>
+      <div class="horizontal-scroll-container" id="success-container"></div>
+      <button class="nav-btn right" onclick="scrollSuccess(1)">❯</button>
+    </div>
+
+    <p style="text-align:center; font-size:0.9rem; color:#888; margin-top:10px;">
+      Swipe or use arrows to explore stories → Tap images to view 📸
+    </p>
+  </div>
+
   <div id="adopt" class="section-container fade-in-section">
     <h2 class="section-title">Ready For Adoption</h2>
-    <p class="section-subtitle">Click on any dog's card to view their full profile, photos, and medical history. ➔</p>
+    <p class="section-subtitle">These dogs are ready for a loving home 🏡. Click to meet your future companion. ➔</p>
     <div class="horizontal-scroll-container" id="adopt-container">
       <p style="text-align: center; width: 100%; color: #999;">Loading adoption data...</p>
     </div>
@@ -465,7 +854,7 @@
 
   <div id="treatment" class="section-container fade-in-section">
     <h2 class="section-title">Urgent Treatment Needed</h2>
-    <p class="section-subtitle">Click to view hospital estimates, receipts, and treatment plans. ➔</p>
+    <p class="section-subtitle">These cases urgently need medical support 🏥. Click to help save a life. ➔</p>
     <div class="horizontal-scroll-container" id="treatment-container">
       <p style="text-align: center; width: 100%; color: #999;">Loading medical cases...</p>
     </div>
@@ -476,6 +865,7 @@
     <div class="donate-grid">
       <div class="donate-card">
         <h3>1. Make a Donation</h3>
+        <div id="donationContext" class="donation-context-banner"></div>
         <img src="upicode.jpg" alt="UPI QR Code" style="width: 180px; height: 180px; margin: 0 auto 15px; display: block; border-radius: 10px; border: 2px solid #ddd; object-fit: contain;">
         <p style="font-weight: bold; font-size: 1.2rem; margin: 0 0 20px 0;">UPI: salesabshappypaws@oksbi</p>
         <input type="number" id="quickAmount" class="amt-input" placeholder="Amount (₹)">
@@ -536,22 +926,26 @@
       <span class="close-btn" onclick="closeModal()">&times;</span>
       
       <h2 id="modalName" style="font-size: 2.5rem; margin-bottom: 5px;">Dog Name</h2>
-      <div id="modalTags" class="dog-tags" style="margin-bottom: 20px;"></div>
-      
+      <div id="modalTags" class="modal-tags"></div>
+
+      <div class="gallery-hint">⬅️ Swipe / Scroll to view more photos & details ➡️</div>
       <div class="modal-gallery" id="modalGallery"></div>
-      
-      <p id="modalDesc" style="line-height: 1.8; color: #555; font-size: 1.1rem;"></p>
-      
-      <div id="modalTreatmentBox" class="treatment-box hidden">
-        <h4>🏥 Medical Requirements</h4>
-        <p id="modalTreatment" style="margin-bottom: 0; line-height: 1.5; color: #444;"></p>
+
+      <div class="modal-section">
+        <h4>🐾 About</h4>
+        <p id="modalDesc"></p>
+      </div>
+
+      <div id="modalTreatmentBox" class="modal-section hidden">
+        <h4>🏥 Medical Details</h4>
+        <p id="modalTreatment"></p>
         <a id="modalReceipt" href="#" target="_blank" class="receipt-btn hidden">
           📄 View Hospital Estimate / Receipt
         </a>
       </div>
-      
-      <button class="btn-primary" style="width: 100%; margin-top: 20px; padding: 15px;" onclick="closeModal(); document.getElementById('donate').scrollIntoView({behavior: 'smooth'});">
-        Donate For <span id="modalDonateName"></span>
+
+      <button class="btn-primary" style="width: 100%; margin-top: 25px; padding: 15px; font-size: 1.1rem;">
+        <span id="modalActionText"></span>
       </button>
     </div>
   </div>
@@ -604,6 +998,58 @@
   </footer>
 
   <script>
+function launchConfetti() {
+  const duration = 1500;
+  const end = Date.now() + duration;
+  const colors = ['#ff4d4d', '#f9cb28', '#2ecc71', '#3498db'];
+
+  (function frame() {
+    if (Date.now() > end) return;
+
+    for (let i = 0; i < 5; i++) {
+      const confetti = document.createElement('div');
+      confetti.style.position = 'fixed';
+      confetti.style.width = '8px';
+      confetti.style.height = '8px';
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.top = '0';
+      confetti.style.left = Math.random() * window.innerWidth + 'px';
+      confetti.style.zIndex = '3000';
+      confetti.style.borderRadius = '50%';
+      confetti.style.transition = 'transform 1.5s linear, opacity 1.5s';
+
+      document.body.appendChild(confetti);
+
+      setTimeout(() => {
+        confetti.style.transform = `translateY(${window.innerHeight}px) rotate(720deg)`;
+        confetti.style.opacity = '0';
+      }, 10);
+
+      setTimeout(() => confetti.remove(), 1500);
+    }
+
+    requestAnimationFrame(frame);
+  })();
+}
+
+let confettiPlayed = false;
+
+window.addEventListener('load', () => {
+  const successSection = document.getElementById('success');
+
+  if (successSection) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !confettiPlayed) {
+          setTimeout(() => launchConfetti(), 300); // smoother trigger
+          confettiPlayed = true;
+        }
+      });
+    }, { threshold: 0.3 });
+
+    observer.observe(successSection);
+  }
+});
     // Global data store to fix mobile JSON stringification crashes
     const appData = {
       Adoption: [],
@@ -639,56 +1085,12 @@
       return cleanUrl;
     }
 
-    // Modal logic using index instead of inline encoded string
-    function openModal(sheetName, index) {
-      try {
-        const data = appData[sheetName][index];
-        if (!data) return;
-
-        document.getElementById('modalName').innerText = data.name;
-        document.getElementById('modalDonateName').innerText = data.name;
-        document.getElementById('modalDesc').innerText = data.longDesc || "No additional description provided.";
-        
-        const tagsContainer = document.getElementById('modalTags');
-        tagsContainer.innerHTML = '';
-        if(data.tags) data.tags.split(',').forEach(tag => tagsContainer.innerHTML += `<span>${tag.trim()}</span>`);
-
-        const gallery = document.getElementById('modalGallery');
-        gallery.innerHTML = '';
-        if(data.gallery) {
-          data.gallery.split(',').forEach(url => {
-             let cleanUrl = url.trim();
-             if (cleanUrl.includes('folders/')) {
-                 const folderMatch = cleanUrl.match(/folders\/([a-zA-Z0-9_-]+)/);
-                 // Added lazy loading to prevent mobile thread locking
-                 if (folderMatch) gallery.innerHTML += `<iframe loading="lazy" src="https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#grid" width="100%" height="300" style="border:none; border-radius:10px; margin-bottom:10px;"></iframe>`;
-             } else {
-                 gallery.innerHTML += `<img loading="lazy" src="${getDirectImgUrl(cleanUrl)}" alt="Photo" style="width:100%; border-radius:10px; margin-bottom:10px;">`;
-             }
-          });
-        }
-
-        const treatBox = document.getElementById('modalTreatmentBox');
-        if(data.treatment || data.funds || data.receipt) {
-           treatBox.classList.remove('hidden');
-           let treatHtml = data.treatment || "Medical care ongoing.";
-           if(data.funds) treatHtml += `<br><br><strong style="color:var(--accent); font-size:1.2rem;">Funds Required: ${data.funds}</strong>`;
-           document.getElementById('modalTreatment').innerHTML = treatHtml;
-           const recBtn = document.getElementById('modalReceipt');
-           if(data.receipt) { recBtn.href = getDirectImgUrl(data.receipt); recBtn.classList.remove('hidden'); }
-           else { recBtn.classList.add('hidden'); }
-        } else { treatBox.classList.add('hidden'); }
-
-        document.getElementById('dogModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-      } catch (e) { console.error("Modal Error", e); }
-    }
 
     function closeModal() {
       document.getElementById('dogModal').classList.add('hidden');
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.body.style.overflowX = 'hidden';
     }
-
     const sheetId = '11xJ7r0Q0iRRB3TxdFkdB4qjzHoIfnI8g6zW5ZrALbfU';
     
     // 1. Fixed Ledger Fetch (with Newest on Top & Today Badge)
@@ -856,72 +1258,195 @@
         }, { threshold: 0.5 });
         counterObserver.observe(counterElement);
       });
+      
     // Carousels logic rewritten to populate memory array rather than inline html attributes
     function fetchCarousel(sheetName, containerId) {
-      fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`)
+      return fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`)
         .then(res => res.text())
         .then(text => {
           const data = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
           const container = document.getElementById(containerId);
+          const successContainer = document.getElementById('success-container');
+          
+          container.classList.remove('adopt-theme','treatment-theme');
+          if (sheetName === 'Adoption') container.classList.add('adopt-theme');
+          if (sheetName === 'Treatment') container.classList.add('treatment-theme');
           container.innerHTML = ''; 
-          if(!data.table.rows) return;
+         if (!data.table || !data.table.rows) {
+  console.error("Sheet data missing or malformed", data);
+  return;
+}
 
-          appData[sheetName] = []; // Clear array
+          appData[sheetName] = [];
 
           const rows = data.table.rows.slice().reverse();
-          rows.forEach((row, index) => {
+          rows.forEach((row) => {
             if (!row.c || !row.c[0]) return; 
-            const name = row.c[0].v;
-            const thumbUrl = getDirectImgUrl(row.c[3] ? row.c[3].v : '');
             
-            // Push to memory
+            const name = String(row.c[0]?.v || '');
+            const tags = String(row.c[1]?.v || '');
+            const thumbUrl = getDirectImgUrl(String(row.c[3]?.v || ''));
+            const longDesc = String(row.c[6]?.v || row.c[2]?.v || '');
+            const gallery = String(row.c[7]?.v || '');
+            const treatment = String(row.c[8]?.v || '');
+            const receipt = String(row.c[9]?.v || '');
+            const fundsText = String(row.c[10]?.v || '');
+            const originalStatus = String(row.c[5]?.v || '');
+            const status = originalStatus.toLowerCase();
+
+            let isRecovered = status.includes('recovered') || status.includes('treated');
+            let isAdopted = status.includes('adopted');
+
             appData[sheetName].push({
-               name: name,
-               tags: row.c[1]?.v || '',
-               longDesc: row.c[6]?.v || row.c[2]?.v,
-               gallery: row.c[7]?.v || '',
-               treatment: row.c[8]?.v || '',
-               receipt: row.c[9]?.v || '',
-               funds: row.c[10]?.v || ''
+              name, tags, longDesc, gallery, treatment, receipt, funds: fundsText, status: originalStatus
             });
 
-            let mediaHtml = (row.c[4]?.v || '').toLowerCase() === 'video' 
-               ? `<div style="position:relative; width:100%; height:100%; background:#000;">
-                    <video muted playsinline preload="none" style="width:100%; height:100%; object-fit:cover;">
-                      <source src="${thumbUrl}" type="video/mp4">
-                    </video>
-                    <span style="position:absolute; top:10px; right:10px; background:rgba(231,76,60,0.9); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold; z-index:5; box-shadow:0 2px 5px rgba(0,0,0,0.3);">▶ Video Inside</span>
-                  </div>` 
-               : `<img loading="lazy" src="${thumbUrl}" alt="${name}">`;
-            // Clean click handler references array index directly
-            container.innerHTML += `
-  <div class="scroll-card" onclick="openModal('${sheetName}', ${index})">
-    <div class="media-wrapper">${mediaHtml}</div>
-    <div class="dog-info">
-      <h3 style="margin-bottom: 5px;">${name}</h3>
-      <p style="color: #666; font-size: 0.9rem; margin: 0;">${row.c[2]?.v || ''}</p>
-      <span class="view-details-hint">View Profile <i>➔</i></span>
-    </div>
-  </div>`;
-        });
+            const dataIndex = appData[sheetName].length - 1;
+
+            let mediaHtml = String(row.c[4]?.v || '').toLowerCase() === 'video'
+              ? `<div style="position:relative; width:100%; height:100%; background:#000;">
+                   <video muted playsinline preload="none" style="width:100%; height:100%; object-fit:cover;">
+                     <source src="${thumbUrl}" type="video/mp4">
+                   </video>
+                   <span style="position:absolute; top:10px; right:10px; background:rgba(231,76,60,0.9); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold; z-index:5;">▶ Video Inside</span>
+                 </div>`
+              : `<img loading="lazy" src="${thumbUrl}" alt="${name}">`;
+
+            const cardHTML = `
+             <div class="scroll-card" onclick="openDetails(this)" data-sheet="${sheetName}" data-id="${encodeURIComponent(name)}">
+                ${originalStatus ? `<div class="badge" style="right:12px; left:auto; background:#3498db;">${originalStatus}</div>` : ''}
+                ${sheetName === 'Adoption' && !isAdopted && !isRecovered ? '<div class="badge adopt-badge">Adopt Me ❤️</div>' : ''}
+                ${sheetName === 'Treatment' ? '<div class="badge urgent-badge-custom">Urgent 🚨</div>' : ''}
+                <div class="media-wrapper">${mediaHtml}</div>
+                <div class="dog-info">
+                  <h3>${sheetName === 'Adoption' ? '🏡 ' : '🏥 '}${name}</h3>
+                  <p style="color:#666;font-size:0.9rem;">${String(row.c[2]?.v || '')}</p>
+                  <span class="view-details-hint">View Profile <i>➔</i></span>
+                </div>
+              </div>`;
+
+            if (isAdopted || isRecovered) {
+              if (successContainer) {
+                const typeClass = isAdopted ? 'success-adopt' : 'success-treat';
+                successContainer.innerHTML += cardHTML.replace('scroll-card', `scroll-card ${typeClass}`);
+              }
+            } else {
+              container.innerHTML += cardHTML;
+            }
+          });
+
+          if (container.children.length === 1) container.classList.add('single-card');
+          else container.classList.remove('single-card');
         });
     }
+         
+    
 
-    fetchCarousel('Adoption', 'adopt-container');
-    fetchCarousel('Treatment', 'treatment-container');
+// Fetch both datasets.
+    Promise.all([
+      fetchCarousel('Adoption', 'adopt-container'),
+      fetchCarousel('Treatment', 'treatment-container')
+    ]).then(() => {
+      const successCards = document.querySelectorAll('#success-container .scroll-card');
+      successCards.forEach(card => card.classList.add('success-animate'));
+
+      const successSection = document.getElementById('success');
+      if (successSection) {
+        const successObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              successCards.forEach((card, i) => {
+                setTimeout(() => card.classList.add('visible'), i * 150);
+              });
+              successObserver.unobserve(successSection);
+            }
+          });
+        }, { threshold: 0.1 });
+        successObserver.observe(successSection);
+      }
+
+      updateCenterCard();
+    });
 
     document.addEventListener("DOMContentLoaded", () => {
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); });
-      }, { threshold: 0.1 });
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add('is-visible');
+            }, index * 100); // stagger effect
+          }
+        });
+      }, { threshold: 0.15 });
       document.querySelectorAll('.fade-in-section').forEach(el => observer.observe(el));
+
+      // Add entry animation class to all success cards
+      const successCards = document.querySelectorAll('#success-container .scroll-card');
+      successCards.forEach(card => card.classList.add('success-animate'));
     });
+
+    // (Removed duplicate success animation observer block)
     
-    // WELCOME SCREEN PROGRESSIVE LOADING
+    // WELCOME SCREEN PROGRESSIVE LOADING WITH SKIP ON RETURN FROM DETAILS
     window.addEventListener('load', function() {
-      const bar = document.getElementById('load-bar');
       const loader = document.getElementById('loader-screen');
-      
+
+      // ✅ IMPORTANT: Skip loader if coming back from details page
+      if (sessionStorage.getItem("skipLoader") === "true") {
+        sessionStorage.removeItem("skipLoader");
+
+        loader.classList.add('loader-hidden');
+        document.body.style.overflow = '';
+        document.body.style.overflowX = 'hidden';
+
+        // Instantly remove
+        loader.style.display = 'none';
+        // 👉 Highlight donation section if navigated via #donate or ?animal=
+        if (window.location.hash.includes("donate") || window.location.search.includes("animal=")) {
+          const params = new URLSearchParams(window.location.search);
+          let animal = params.get("animal");
+
+          // fallback: sometimes query comes AFTER hash like /#donate?animal=Bruno
+          if (!animal && window.location.hash.includes("?")) {
+            const hashParams = new URLSearchParams(window.location.hash.split("?")[1]);
+            animal = hashParams.get("animal");
+          }
+
+          if (animal && animal.trim() !== "") {
+            const banner = document.getElementById("donationContext");
+            if (banner) {
+              banner.innerHTML = `Helping <span>${decodeURIComponent(animal)}</span> ❤️`;
+              banner.style.display = "block";
+            }
+
+            const amountInput = document.getElementById("quickAmount");
+            if (amountInput && !amountInput.value) {
+              amountInput.value = 500; // smart default donation
+            }
+          }
+          setTimeout(() => {
+            const donateSection = document.getElementById("donate");
+            const donateCard = donateSection?.querySelector(".donate-card");
+
+            if (donateSection) {
+              donateSection.scrollIntoView({ behavior: "smooth" });
+            }
+
+            if (donateCard) {
+              donateCard.classList.add("donate-highlight");
+
+              // remove after animation
+              setTimeout(() => {
+                donateCard.classList.remove("donate-highlight");
+              }, 3000);
+            }
+          }, 1200); // wait till page loads nicely
+        }
+        return;
+      }
+
+      const bar = document.getElementById('load-bar');
+
       let progress = 0;
       const interval = setInterval(() => {
         progress += Math.random() * 30; 
@@ -932,13 +1457,59 @@
           clearInterval(interval);
           setTimeout(() => {
             loader.classList.add('loader-hidden');
-            document.body.style.overflow = 'auto'; 
+            document.body.style.overflow = '';
+            document.body.style.overflowX = 'hidden';
+
+            setTimeout(() => {
+              loader.style.display = 'none';
+              // 👉 Highlight donation section if navigated via #donate or ?animal=
+              if (window.location.hash.includes("donate") || window.location.search.includes("animal=")) {
+                const params = new URLSearchParams(window.location.search);
+                let animal = params.get("animal");
+
+                // fallback: sometimes query comes AFTER hash like /#donate?animal=Bruno
+                if (!animal && window.location.hash.includes("?")) {
+                  const hashParams = new URLSearchParams(window.location.hash.split("?")[1]);
+                  animal = hashParams.get("animal");
+                }
+
+                if (animal && animal.trim() !== "") {
+                  const banner = document.getElementById("donationContext");
+                  if (banner) {
+                    banner.innerHTML = `Helping <span>${decodeURIComponent(animal)}</span> ❤️`;
+                    banner.style.display = "block";
+                  }
+
+                  const amountInput = document.getElementById("quickAmount");
+                  if (amountInput && !amountInput.value) {
+                    amountInput.value = 500; // smart default donation
+                  }
+                }
+                setTimeout(() => {
+                  const donateSection = document.getElementById("donate");
+                  const donateCard = donateSection?.querySelector(".donate-card");
+
+                  if (donateSection) {
+                    donateSection.scrollIntoView({ behavior: "smooth" });
+                  }
+
+                  if (donateCard) {
+                    donateCard.classList.add("donate-highlight");
+
+                    // remove after animation
+                    setTimeout(() => {
+                      donateCard.classList.remove("donate-highlight");
+                    }, 3000);
+                  }
+                }, 1200); // wait till page loads nicely
+              }
+            }, 1100);
           }, 500);
         }
       }, 200);
     });
 
-    document.body.style.overflow = 'hidden';
+
     // Search Filter Logic for the Ledger
     function filterLedger() {
       let input = document.getElementById("ledgerSearch").value.toLowerCase();
@@ -963,6 +1534,114 @@
         // Fallback just in case the API is slow
         document.getElementById('welcome-views').innerText = "Many"; 
       });
+
+    function openImageFullscreen(src) {
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.background = 'rgba(0,0,0,0.95)';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.zIndex = '2000';
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.maxWidth = '90%';
+      img.style.maxHeight = '90%';
+      img.style.borderRadius = '10px';
+
+      overlay.appendChild(img);
+
+      overlay.onclick = () => document.body.removeChild(overlay);
+
+      document.body.appendChild(overlay);
+    }
+    // Detect center card and apply glow
+    function updateCenterCard() {
+      const container = document.getElementById('success-container');
+      if (!container) return;
+
+      const cards = container.querySelectorAll('.scroll-card');
+      const containerRect = container.getBoundingClientRect();
+      const centerX = containerRect.left + containerRect.width / 2;
+
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(centerX - cardCenter);
+
+        if (distance < 120) {
+          card.classList.add('active-center');
+        } else {
+          card.classList.remove('active-center');
+        }
+      });
+    }
+
+    const successContainerEl = document.getElementById('success-container');
+    if (successContainerEl) {
+      successContainerEl.addEventListener('scroll', updateCenterCard);
+      window.addEventListener('load', updateCenterCard);
+    }
+
+    // Success section arrow scroll function
+    function scrollSuccess(direction) {
+      const container = document.getElementById('success-container');
+      if (!container) return;
+
+      const cards = container.querySelectorAll('.scroll-card');
+      const containerRect = container.getBoundingClientRect();
+      const centerX = containerRect.left + containerRect.width / 2;
+
+      let closestIndex = 0;
+      let minDistance = Infinity;
+
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(centerX - cardCenter);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      let targetIndex = closestIndex + direction;
+
+      if (targetIndex < 0) targetIndex = 0;
+      if (targetIndex >= cards.length) targetIndex = cards.length - 1;
+
+      const targetCard = cards[targetIndex];
+      const targetRect = targetCard.getBoundingClientRect();
+      const offset = targetRect.left - containerRect.left - (containerRect.width / 2) + (targetRect.width / 2);
+
+      container.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+    function openDetails(cardEl) {
+      const sheet = cardEl.dataset.sheet;
+      const id = cardEl.dataset.id;
+
+      // Skip welcome screen when returning
+      sessionStorage.setItem("skipLoader", "true");
+
+      window.location.href = `details.html?sheet=${sheet}&id=${id}`;
+    }
+
+    // Ensure clicks work for dynamically injected success cards
+    document.getElementById('success-container')?.addEventListener('click', function(e) {
+      const card = e.target.closest('.scroll-card');
+      if (!card) return;
+
+      // Prevent duplicate navigation if inline onclick already fires
+      if (e.target.closest('button')) return;
+
+      openDetails(card);
+    });
   </script>
 </body>
 </html>
