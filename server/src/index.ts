@@ -1,12 +1,33 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { query } from './config/db';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
+
+// Auto-initialize Neon database if tables are missing
+async function ensureDbInitialized() {
+  try {
+    const res = await query("SELECT to_regclass('public.animals') as tbl_exists");
+    if (!res.rows[0]?.tbl_exists) {
+      console.log('🔄 Initializing database tables on first launch...');
+      const schemaPath = path.join(__dirname, 'db/schema.sql');
+      if (fs.existsSync(schemaPath)) {
+        const sql = fs.readFileSync(schemaPath, 'utf8');
+        await query(sql);
+        console.log('✅ Database schema created automatically!');
+      }
+    }
+  } catch (err) {
+    // Resilient in-memory fallback handles any initial connection delay
+  }
+}
+ensureDbInitialized();
 
 // Route imports
 import authRoutes from './routes/authRoutes';
