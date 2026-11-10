@@ -90,28 +90,28 @@ export const HomePage: React.FC = () => {
       <Hero stats={stats} settings={settings} />
 
       {/* 1. Urgent Medical Treatments Section */}
-      <section id="treatment" className="py-20 px-4 max-w-6xl mx-auto w-full relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+      <section id="treatment" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-3 font-display">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
               <Activity className="w-3.5 h-3.5 text-rose-500" />
               Critical Roadside Rescues
             </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
               Urgent Medical Cases 🚨
             </h2>
-            <p className="text-slate-600 text-sm md:text-base max-w-lg mt-2 font-medium">
+            <p className="text-slate-600 text-xs sm:text-base max-w-lg mt-1.5 font-medium">
               Survivors battling orthopedic trauma, maggot wounds, and illnesses. They rely on emergency treatment sponsorships.
             </p>
           </div>
         </div>
 
         {treatmentAnimals.length === 0 && !loading ? (
-          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm">
+          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base">
             All previous critical trauma rescues have been fully treated and rehabilitated! 🎉
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {treatmentAnimals.map((animal) => (
               <PetCard
                 key={animal.id}
@@ -127,28 +127,28 @@ export const HomePage: React.FC = () => {
       <PetDivider />
 
       {/* 2. Adoption Section */}
-      <section id="adopt" className="py-20 px-4 max-w-6xl mx-auto w-full relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+      <section id="adopt" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-3 font-display">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
               <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
               Forever Companions
             </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
               Adopt, Don't Shop 🏡
             </h2>
-            <p className="text-slate-600 text-sm md:text-base max-w-lg mt-2 font-medium">
+            <p className="text-slate-600 text-xs sm:text-base max-w-lg mt-1.5 font-medium">
               Healthy, fully vaccinated, and affectionate dogs waiting patiently for warm loving homes.
             </p>
           </div>
         </div>
 
         {adoptionAnimals.length === 0 && !loading ? (
-          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm">
+          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base">
             All previously rescued puppies have found loving foster or forever homes! Meet them in Success Stories below. 🐶
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {adoptionAnimals.map((animal) => (
               <PetCard
                 key={animal.id}

@@ -9,12 +9,8 @@ import {
   ChevronRight,
   Phone,
   Share2,
-  FileText,
-  Activity,
   Maximize2,
   Video as VideoIcon,
-  Receipt,
-  Camera,
 } from 'lucide-react';
 import { Animal, AnimalMedia, formatMediaUrl, MediaType } from '../types';
 import { ShareModal } from './ShareModal';
@@ -48,7 +44,6 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
 
   if (animal.media && animal.media.length > 0) {
     animal.media.forEach((m, idx) => {
-      // Avoid duplicate if hero is same url
       if (m.url !== animal.hero_image) {
         rawMediaList.push({
           ...m,
@@ -86,32 +81,32 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
         <div
-          className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-3xl shadow-2xl overflow-y-auto flex flex-col border border-pink-100"
+          className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-y-auto flex flex-col border border-pink-100"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header Controls: Share & Close */}
-          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setIsShareOpen(true)}
-              className="p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-all shadow-md hover:scale-105 flex items-center gap-1.5 text-xs font-bold"
+              className="p-2 sm:p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-all shadow-md flex items-center gap-1 text-xs font-bold font-display"
               title="Help fundraise by sharing"
             >
-              <Share2 className="w-4 h-4 text-pink-300" />
-              <span className="hidden sm:inline">Share Story</span>
+              <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-300" />
+              <span className="hidden sm:inline">Share</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-all shadow-md"
+              className="p-2 sm:p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-all shadow-md"
               aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
-          {/* Media Preview Section with Lightbox option */}
-          <div className="relative aspect-[16/9] w-full bg-slate-950 overflow-hidden flex items-center justify-center">
+          {/* Media Preview Section */}
+          <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-slate-950 overflow-hidden flex items-center justify-center">
             {currentMedia?.media_type === 'video' ? (
               <video
                 src={currentMedia.url}
@@ -130,20 +125,20 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
             )}
 
             {/* Media Type & Caption Tag */}
-            <div className="absolute bottom-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md text-white text-xs px-3.5 py-1.5 rounded-full flex items-center gap-2 max-w-[80%]">
-              <span className="font-bold text-pink-300 uppercase tracking-wider text-[10px]">
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-4 sm:left-4 z-10 bg-slate-900/80 backdrop-blur-md text-white text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 max-w-[80%]">
+              <span className="font-bold text-pink-300 uppercase tracking-wider text-[9px] sm:text-[10px]">
                 {currentMedia?.media_type === 'xray'
-                  ? '🩻 X-Ray Scan'
+                  ? '🩻 X-Ray'
                   : currentMedia?.media_type === 'bill'
                   ? '🧾 Vet Bill'
                   : currentMedia?.media_type === 'prescription'
-                  ? '📋 Medical Report'
+                  ? '📋 Report'
                   : currentMedia?.media_type === 'video'
-                  ? '🎥 Recovery Video'
+                  ? '🎥 Video'
                   : '📸 Photo'}
               </span>
               {currentMedia?.caption && (
-                <span className="truncate border-l border-slate-700 pl-2 text-slate-200">
+                <span className="truncate border-l border-slate-700 pl-1.5 text-slate-200">
                   {currentMedia.caption}
                 </span>
               )}
@@ -153,49 +148,48 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
             {currentMedia?.media_type !== 'video' && currentMedia?.url && (
               <button
                 onClick={() => setLightboxUrl(currentMedia.url)}
-                className="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white text-xs flex items-center gap-1 font-bold shadow-md"
-                title="Zoom into document/photo"
+                className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white text-xs flex items-center gap-1 font-bold shadow-md"
+                title="Zoom into photo/document"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Zoom</span>
               </button>
             )}
 
-            {/* Carousel Arrows if multiple */}
+            {/* Carousel Arrows */}
             {filteredMedia.length > 1 && (
-              <div className="absolute inset-y-0 inset-x-3 flex items-center justify-between pointer-events-none">
+              <div className="absolute inset-y-0 inset-x-2 sm:inset-x-3 flex items-center justify-between pointer-events-none">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : filteredMedia.length - 1));
                   }}
-                  className="pointer-events-auto p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors"
+                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveMediaIndex((prev) => (prev < filteredMedia.length - 1 ? prev + 1 : 0));
                   }}
-                  className="pointer-events-auto p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors"
+                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             )}
           </div>
 
-          {/* Categorized Media Filter Tabs */}
+          {/* Categorized Media Filter Tabs - Scrollable on mobile */}
           {rawMediaList.length > 1 && (
-            <div className="bg-slate-50 border-b border-pink-100 px-4 py-2 flex items-center gap-2 overflow-x-auto text-xs font-bold">
-              <span className="text-slate-400 font-semibold text-[11px] uppercase mr-1">Gallery:</span>
+            <div className="bg-slate-50 border-b border-pink-100 px-3 py-2 flex items-center gap-1.5 overflow-x-auto text-[11px] sm:text-xs font-bold font-display scrollbar-none">
               <button
                 onClick={() => {
                   setSelectedFilter('all');
                   setActiveMediaIndex(0);
                 }}
-                className={`px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap ${
                   selectedFilter === 'all'
                     ? 'bg-pink-600 text-white shadow-sm'
                     : 'bg-white text-slate-600 hover:bg-pink-50'
@@ -210,7 +204,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     setSelectedFilter('xray');
                     setActiveMediaIndex(0);
                   }}
-                  className={`px-3 py-1.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
                     selectedFilter === 'xray'
                       ? 'bg-pink-600 text-white shadow-sm'
                       : 'bg-white text-slate-600 hover:bg-pink-50'
@@ -226,7 +220,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     setSelectedFilter('prescription');
                     setActiveMediaIndex(0);
                   }}
-                  className={`px-3 py-1.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
                     selectedFilter === 'prescription'
                       ? 'bg-pink-600 text-white shadow-sm'
                       : 'bg-white text-slate-600 hover:bg-pink-50'
@@ -242,13 +236,13 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     setSelectedFilter('bill');
                     setActiveMediaIndex(0);
                   }}
-                  className={`px-3 py-1.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
                     selectedFilter === 'bill'
                       ? 'bg-pink-600 text-white shadow-sm'
                       : 'bg-white text-slate-600 hover:bg-pink-50'
                   }`}
                 >
-                  🧾 Vet Bills ({billCount})
+                  🧾 Bills ({billCount})
                 </button>
               )}
 
@@ -258,7 +252,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     setSelectedFilter('video');
                     setActiveMediaIndex(0);
                   }}
-                  className={`px-3 py-1.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
                     selectedFilter === 'video'
                       ? 'bg-pink-600 text-white shadow-sm'
                       : 'bg-white text-slate-600 hover:bg-pink-50'
@@ -270,34 +264,33 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
             </div>
           )}
 
-          {/* Modal Details */}
-          <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+          {/* Modal Details Content */}
+          <div className="p-4 sm:p-8 flex-1 flex flex-col justify-between">
             <div>
               {/* Title & Tags */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 flex items-center gap-2 font-display">
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2 font-display">
                     {animal.name}
-                    {isCompleted && <Sparkles className="w-6 h-6 text-pink-500" />}
+                    {isCompleted && <Sparkles className="w-5 h-5 text-pink-500" />}
                   </h2>
-                  <p className="text-sm font-bold text-pink-600 mt-0.5 font-display">
+                  <p className="text-xs sm:text-sm font-bold text-pink-600 mt-0.5 font-display">
                     Category: {animal.category === 'adoption' ? 'Adoption' : 'Emergency Medical Rescue'}
                   </p>
                 </div>
 
-                {/* Status pill */}
-                <span className="px-3.5 py-1.5 rounded-full text-xs font-black bg-pink-100 text-pink-800 border border-pink-200">
+                <span className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-black bg-pink-100 text-pink-800 border border-pink-200">
                   {animal.status.replace('_', ' ').toUpperCase()}
                 </span>
               </div>
 
               {/* Tags */}
               {animal.tags && animal.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-1.5 mb-4">
                   {animal.tags.map((t, idx) => (
                     <span
                       key={idx}
-                      className="bg-pink-50 text-pink-700 text-xs font-semibold px-3 py-1 rounded-full border border-pink-100"
+                      className="bg-pink-50 text-pink-700 text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full border border-pink-100"
                     >
                       {t}
                     </span>
@@ -305,71 +298,68 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                 </div>
               )}
 
-              {/* Medical Funding Status Meter */}
+              {/* Medical Funding Meter */}
               {fundsNeeded > 0 && (
-                <div className="bg-pink-50/80 border border-pink-200/80 rounded-2xl p-5 mb-6">
-                  <div className="flex justify-between items-center text-sm font-bold mb-2">
+                <div className="bg-pink-50/80 border border-pink-200/80 rounded-2xl p-4 sm:p-5 mb-5">
+                  <div className="flex justify-between items-center text-xs sm:text-sm font-bold mb-1.5">
                     <span className="text-slate-700 font-display">Treatment Funding Progress</span>
-                    <span className="text-pink-600 font-black">
+                    <span className="text-pink-600 font-black font-display">
                       ₹{fundsRaised.toLocaleString('en-IN')} of ₹{fundsNeeded.toLocaleString('en-IN')} ({fundPercent}%)
                     </span>
                   </div>
-                  <div className="w-full bg-pink-100 rounded-full h-3.5 overflow-hidden">
+                  <div className="w-full bg-pink-100 rounded-full h-3 overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 h-full rounded-full transition-all duration-500"
                       style={{ width: `${fundPercent}%` }}
                     />
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">
-                    100% of contributions are allocated to {animal.name}'s clinic treatments, surgery, and rehabilitation medicines.
-                  </p>
                 </div>
               )}
 
               {/* Rescue Story */}
-              <div className="mb-6">
-                <h4 className="text-base font-bold text-slate-900 mb-2 font-display">About & Rescue Story</h4>
-                <p className="text-slate-700 text-sm md:text-base leading-relaxed whitespace-pre-line font-sans">
+              <div className="mb-5">
+                <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-1.5 font-display">About & Rescue Story</h4>
+                <p className="text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed whitespace-pre-line font-sans">
                   {animal.full_story || animal.short_desc || 'No detailed background provided.'}
                 </p>
               </div>
 
-              {/* Medical Treatment Details */}
+              {/* Medical Details */}
               {animal.medical_details && (
-                <div className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-5 mb-6">
-                  <h4 className="text-sm font-bold text-rose-900 flex items-center gap-2 mb-2 font-display">
-                    <ShieldAlert className="w-4 h-4 text-rose-500" />
+                <div className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-4 sm:p-5 mb-5">
+                  <h4 className="text-xs sm:text-sm font-bold text-rose-900 flex items-center gap-1.5 mb-1.5 font-display">
+                    <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0" />
                     Veterinary Medical History & Care Plan
                   </h4>
-                  <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
+                  <p className="text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
                     {animal.medical_details}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Action CTAs */}
-            <div className="pt-6 border-t border-pink-100 flex flex-wrap gap-3 justify-between items-center">
+            {/* Action CTAs - Responsive Mobile Stacking */}
+            <div className="pt-4 mt-2 border-t border-pink-100 flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-between items-stretch sm:items-center">
               <button
                 type="button"
                 onClick={() => setIsShareOpen(true)}
-                className="px-4 py-2.5 rounded-full border border-pink-200 bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold text-xs md:text-sm flex items-center gap-2 transition-all hover:scale-105 font-display"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-pink-200 bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all font-display active:scale-95"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-3.5 h-3.5" />
                 Help Fundraise by Sharing
               </button>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 font-bold text-xs md:text-sm"
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 font-bold text-xs sm:text-sm text-center"
                 >
                   Close
                 </button>
 
                 {isCompleted ? (
-                  <div className="px-6 py-3 rounded-full bg-emerald-500 text-white font-bold text-xs md:text-sm flex items-center gap-2 shadow-md">
-                    <Check className="w-4 h-4" /> Happily Recovered / Rehomed
+                  <div className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md">
+                    <Check className="w-3.5 h-3.5" /> Recovered / Rehomed
                   </div>
                 ) : animal.category === 'adoption' ? (
                   <a
@@ -378,9 +368,9 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     )}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-6 py-3 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs md:text-sm flex items-center gap-2 shadow-lg shadow-pink-500/20 hover:scale-105 transition-all font-display"
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-pink-500/20 active:scale-95 transition-all font-display"
                   >
-                    <Phone className="w-4 h-4" /> Adopt {animal.name} via WhatsApp
+                    <Phone className="w-3.5 h-3.5" /> Adopt on WhatsApp
                   </a>
                 ) : (
                   <button
@@ -388,9 +378,9 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                       onClose();
                       onDonateForAnimal(animal.name);
                     }}
-                    className="px-7 py-3 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white font-bold text-xs md:text-sm flex items-center gap-2 shadow-lg shadow-pink-500/25 hover:scale-105 transition-all font-display"
+                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-pink-500/25 active:scale-95 transition-all font-display"
                   >
-                    <Heart className="w-4 h-4 fill-white" /> Sponsor {animal.name}'s Care
+                    <Heart className="w-3.5 h-3.5 fill-white" /> Sponsor {animal.name}
                   </button>
                 )}
               </div>
@@ -399,17 +389,17 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
         </div>
       </div>
 
-      {/* Lightbox Modal for Full-Res Document/X-ray Inspection */}
+      {/* Lightbox Modal */}
       {lightboxUrl && (
         <div
-          className="fixed inset-0 z-60 bg-black/90 flex flex-col items-center justify-center p-4 backdrop-blur-md"
+          className="fixed inset-0 z-60 bg-black/90 flex flex-col items-center justify-center p-3 sm:p-4 backdrop-blur-md"
           onClick={() => setLightboxUrl(null)}
         >
           <button
             onClick={() => setLightboxUrl(null)}
-            className="absolute top-4 right-4 p-3 rounded-full bg-white/20 hover:bg-white/40 text-white"
+            className="absolute top-4 right-4 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
           <img
             src={lightboxUrl}
@@ -417,9 +407,6 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
             className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
-          <p className="text-white text-xs mt-3 font-semibold">
-            Press ESC or click anywhere outside to close inspection
-          </p>
         </div>
       )}
 
