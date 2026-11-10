@@ -17,7 +17,14 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
         {/* Col 1 */}
         <div className="md:col-span-5">
           <div className="flex items-center gap-3 mb-3.5">
-            <img src="/logo.png" alt="Paws&Hearts" className="w-9 h-9 rounded-full object-cover border border-pink-400/50" />
+            <img
+              src="/petloveanimation.gif"
+              alt="Paws&Hearts"
+              className="w-10 h-10 rounded-full object-cover border-2 border-pink-400/50 shadow-sm"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/pet-love.png';
+              }}
+            />
             <span className="font-script text-2xl sm:text-3xl font-bold text-pink-400">Paws&Hearts</span>
           </div>
           <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">

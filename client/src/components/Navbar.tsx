@@ -32,16 +32,28 @@ export const Navbar: React.FC = () => {
         }`}
       >
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Animated Logo */}
           <a href="/#" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
-            <img
-              src="/logo.png"
-              alt="Paws&Hearts"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-pink-200 shadow-sm transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-300 shadow-sm shrink-0 bg-pink-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster="/pet-love.png"
+                className="w-full h-full object-cover"
+              >
+                <source src="/petloveanimation.mp4" type="video/mp4" />
+                <img
+                  src="/petloveanimation.gif"
+                  alt="Paws&Hearts"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/pet-love.png';
+                  }}
+                />
+              </video>
+            </div>
             <span className="font-script text-xl sm:text-2xl md:text-3xl font-bold text-pink-500 tracking-wide">
               Paws&Hearts
             </span>
