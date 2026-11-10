@@ -1,0 +1,161 @@
+import React, { useState, useEffect } from 'react';
+import { Navbar } from '../components/Navbar';
+import { Hero } from '../components/Hero';
+import { PetCard } from '../components/PetCard';
+import { PetModal } from '../components/PetModal';
+import { DonationSection } from '../components/DonationSection';
+import { LedgerSection } from '../components/LedgerSection';
+import { SuccessStories } from '../components/SuccessStories';
+import { Footer } from '../components/Footer';
+import { PlayfulPets, PetDivider } from '../components/PlayfulPets';
+import { Animal, Stats, SiteSettings } from '../types';
+import { animalsApi, statsApi } from '../api/client';
+import { Heart, Activity } from 'lucide-react';
+
+export const HomePage: React.FC = () => {
+  const [animals, setAnimals] = useState<Animal[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
+  const [activeAnimalForDonation, setActiveAnimalForDonation] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Increment visit and fetch
+    Promise.all([
+      animalsApi.getAll(),
+      statsApi.getStats(true),
+      statsApi.getSettings(),
+    ])
+      .then(([animalsRes, statsRes, settingsRes]) => {
+        setAnimals(animalsRes.animals);
+        setStats(statsRes.stats);
+        setSettings(settingsRes.settings);
+      })
+      .catch((err) => {
+        console.error('Initial load failed:', err);
+      })
+      .finally(() => setLoading(false));
+
+    // Handle deep linked ?animal= query
+    const params = new URLSearchParams(window.location.search);
+    const animalQuery = params.get('animal');
+    if (animalQuery) {
+      setActiveAnimalForDonation(decodeURIComponent(animalQuery));
+    }
+  }, []);
+
+  const handleDonateForAnimal = (animalName: string) => {
+    setActiveAnimalForDonation(animalName);
+    const el = document.getElementById('donate');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const adoptionAnimals = animals.filter(
+    (a) => a.category === 'adoption' && a.status !== 'adopted' && a.status !== 'recovered'
+  );
+
+  const treatmentAnimals = animals.filter(
+    (a) => a.category === 'treatment' && a.status !== 'recovered' && a.status !== 'adopted'
+  );
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#fff9ef] relative">
+      {/* Playful Floating Pets & Companions */}
+      <PlayfulPets />
+
+      <Navbar />
+      <Hero stats={stats} settings={settings} />
+
+      {/* 1. Urgent Medical Treatments Section */}
+      <section id="treatment" className="py-20 px-4 max-w-6xl mx-auto w-full relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 mb-3 font-display">
+              <Activity className="w-3.5 h-3.5 text-rose-500" />
+              Critical Roadside Rescues
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
+              Urgent Medical Cases 🚨
+            </h2>
+            <p className="text-slate-600 text-sm md:text-base max-w-lg mt-2 font-medium">
+              Survivors battling orthopedic trauma, maggot wounds, and illnesses. They rely on emergency treatment sponsorships.
+            </p>
+          </div>
+        </div>
+
+        {treatmentAnimals.length === 0 && !loading ? (
+          <div className="bg-white/70 backdrop-blur-md rounded-3xl p-12 text-center text-slate-500 font-semibold border border-amber-100 shadow-sm">
+            No active critical emergency cases at this moment! 🎉
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {treatmentAnimals.map((animal) => (
+              <PetCard key={animal.id} animal={animal} onSelect={setSelectedAnimal} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <PetDivider />
+
+      {/* 2. Adoption Section */}
+      <section id="adopt" className="py-20 px-4 max-w-6xl mx-auto w-full relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 mb-3 font-display">
+              <Heart className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+              Forever Companions
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
+              Adopt, Don't Shop 🏡
+            </h2>
+            <p className="text-slate-600 text-sm md:text-base max-w-lg mt-2 font-medium">
+              Healthy, fully vaccinated, and affectionate dogs waiting patiently for warm loving homes.
+            </p>
+          </div>
+        </div>
+
+        {adoptionAnimals.length === 0 && !loading ? (
+          <div className="bg-white/70 backdrop-blur-md rounded-3xl p-12 text-center text-slate-500 font-semibold border border-amber-100 shadow-sm">
+            All adoption-ready dogs have currently found foster or forever homes!
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {adoptionAnimals.map((animal) => (
+              <PetCard key={animal.id} animal={animal} onSelect={setSelectedAnimal} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <PetDivider />
+
+      {/* 3. Success Stories */}
+      <SuccessStories animals={animals} onSelect={setSelectedAnimal} />
+
+      <PetDivider />
+
+      {/* 4. Donation Section */}
+      <DonationSection
+        settings={settings}
+        activeAnimalName={activeAnimalForDonation}
+        onClearAnimalContext={() => setActiveAnimalForDonation(null)}
+      />
+
+      {/* 5. Live Transparency Ledger */}
+      <LedgerSection />
+
+      {/* Pet Lightbox Modal */}
+      <PetModal
+        animal={selectedAnimal}
+        onClose={() => setSelectedAnimal(null)}
+        onDonateForAnimal={handleDonateForAnimal}
+      />
+
+      <Footer settings={settings} />
+    </div>
+  );
+};
