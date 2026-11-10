@@ -11,9 +11,20 @@ import {
   Share2,
   ZoomIn,
   Video as VideoIcon,
+  Play,
+  Camera,
 } from 'lucide-react';
 import { Animal, AnimalMedia, formatMediaUrl, MediaType } from '../types';
 import { ShareModal } from './ShareModal';
+
+// Generates an instant high-res JPEG poster thumbnail for Cloudinary videos
+export const getVideoPoster = (url?: string): string => {
+  if (!url) return '';
+  if (url.includes('cloudinary.com') && url.includes('/video/upload/')) {
+    return url.replace(/\.(mp4|mov|webm|avi|m4v)(\?.*)?$/i, '.jpg$2');
+  }
+  return '';
+};
 
 interface PetModalProps {
   animal: Animal | null;
@@ -134,7 +145,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
         <div
-          className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-y-auto flex flex-col border border-pink-100"
+          className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-y-auto flex flex-col border border-pink-100 pet-modal-scroll-area scroll-smooth"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header Controls: Share & Close */}
@@ -170,12 +181,17 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
 
             {currentMedia?.media_type === 'video' ? (
               <video
+                key={currentMedia.url}
                 src={currentMedia.url}
+                poster={getVideoPoster(currentMedia.url)}
                 controls
-                autoPlay
                 playsInline
-                className="relative z-10 w-full h-full object-contain"
-              />
+                preload="auto"
+                className="relative z-10 w-full h-full object-contain bg-black"
+              >
+                <source src={currentMedia.url} type="video/mp4" />
+                Your browser does not support video playback.
+              </video>
             ) : (
               <img
                 src={currentMedia?.url || animal.hero_image}
@@ -219,7 +235,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     e.stopPropagation();
                     setIsLightboxOpen(true);
                   }}
-                  className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1.5 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
+                  className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1.5 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95 cursor-pointer"
                   title="Zoom into photo"
                 >
                   <ZoomIn className="w-3.5 h-3.5 text-pink-300" />
@@ -260,7 +276,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
           </div>
 
           {/* Thumbnail Gallery Strip (Shows all uploaded photos & videos) */}
-          {filteredMedia.length > 1 && (
+          {rawMediaList.length > 1 && (
             <div className="bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center gap-2.5 overflow-x-auto scrollbar-none">
               <span className="text-[10px] uppercase font-black text-pink-400 tracking-wider font-display shrink-0 pl-0.5 flex items-center gap-1">
                 <span>📸</span>
@@ -268,6 +284,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               </span>
               {filteredMedia.map((item, idx) => {
                 const isActive = safeIndex === idx;
+                const videoPoster = getVideoPoster(item.url);
                 return (
                   <button
                     key={item.id || idx}
@@ -276,7 +293,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                       e.stopPropagation();
                       setActiveMediaIndex(idx);
                     }}
-                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer bg-slate-950 ${
                       isActive
                         ? 'border-pink-500 scale-105 shadow-md shadow-pink-500/40 ring-2 ring-pink-400/50'
                         : 'border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500'
@@ -284,8 +301,26 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     title={item.caption || `View item ${idx + 1}`}
                   >
                     {item.media_type === 'video' ? (
-                      <div className="w-full h-full bg-slate-800 flex items-center justify-center text-white">
-                        <VideoIcon className="w-5 h-5 text-pink-400" />
+                      <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
+                        {videoPoster ? (
+                          <img
+                            src={videoPoster}
+                            alt={item.caption || 'Video preview'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+                            <VideoIcon className="w-5 h-5 text-pink-400" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-md">
+                            <Play className="w-3 h-3 fill-white ml-0.5" />
+                          </div>
+                        </div>
+                        <span className="absolute bottom-1 right-1 bg-black/85 rounded px-1 text-[8px] text-pink-300 font-bold uppercase tracking-wider">
+                          VID
+                        </span>
                       </div>
                     ) : (
                       <img
@@ -293,11 +328,6 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                         alt={item.caption || `Photo ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
-                    )}
-                    {item.media_type === 'video' && (
-                      <span className="absolute bottom-1 right-1 bg-black/80 rounded px-1 text-[8px] text-pink-300 font-bold">
-                        VID
-                      </span>
                     )}
                   </button>
                 );
@@ -465,6 +495,98 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                   </p>
                 </div>
               )}
+
+              {/* Complete Photo, Document & Video Transparency Gallery */}
+              {rawMediaList.length > 1 && (
+                <div className="mb-5 p-4 sm:p-5 bg-slate-900 text-white rounded-2xl sm:rounded-3xl border border-slate-800 shadow-xl">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2 font-display uppercase tracking-wider">
+                        <Camera className="w-4 h-4 text-pink-400" />
+                        Photos, Case Records & Videos ({rawMediaList.length})
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Tap any photo or video below to inspect full-size in the viewer above.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+                    {rawMediaList.map((item, idx) => {
+                      const isCurrent = currentMedia?.url === item.url;
+                      const videoPoster = getVideoPoster(item.url);
+                      return (
+                        <button
+                          key={item.id || idx}
+                          type="button"
+                          onClick={() => {
+                            setSelectedFilter('all');
+                            setActiveMediaIndex(idx);
+                            const modalContent = document.querySelector('.pet-modal-scroll-area');
+                            if (modalContent) modalContent.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all cursor-pointer text-left bg-slate-950 ${
+                            isCurrent
+                              ? 'border-pink-500 ring-2 ring-pink-500/50 shadow-lg shadow-pink-500/30'
+                              : 'border-slate-800 hover:border-pink-400/60 opacity-80 hover:opacity-100'
+                          }`}
+                        >
+                          {item.media_type === 'video' ? (
+                            <div className="relative w-full h-full">
+                              {videoPoster ? (
+                                <img
+                                  src={videoPoster}
+                                  alt={item.caption || 'Video'}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+                                  <VideoIcon className="w-8 h-8 text-pink-400" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                                <div className="w-9 h-9 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                  <Play className="w-4 h-4 fill-white ml-0.5" />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <img
+                              src={item.url}
+                              alt={item.caption || 'Photo'}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          )}
+
+                          {/* Badge tag */}
+                          <div className="absolute top-1.5 left-1.5 z-10">
+                            <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-pink-300 border border-white/10 shadow-sm">
+                              {item.media_type === 'video'
+                                ? '🎥 Video'
+                                : item.media_type === 'xray'
+                                ? '🩻 X-Ray'
+                                : item.media_type === 'prescription'
+                                ? '📋 Report'
+                                : item.media_type === 'bill'
+                                ? '🧾 Bill'
+                                : '📸 Photo'}
+                            </span>
+                          </div>
+
+                          {/* Caption footer */}
+                          {item.caption && (
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2">
+                              <p className="text-[10px] text-slate-200 truncate font-medium">
+                                {item.caption}
+                              </p>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action CTAs - Responsive Mobile Stacking */}
@@ -546,12 +668,17 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
           >
             {currentMedia.media_type === 'video' ? (
               <video
+                key={currentMedia.url}
                 src={currentMedia.url}
+                poster={getVideoPoster(currentMedia.url)}
                 controls
-                autoPlay
                 playsInline
-                className="max-w-full max-h-[82vh] rounded-2xl shadow-2xl"
-              />
+                preload="auto"
+                className="max-w-full max-h-[82vh] rounded-2xl shadow-2xl bg-black"
+              >
+                <source src={currentMedia.url} type="video/mp4" />
+                Your browser does not support HTML5 video playback.
+              </video>
             ) : (
               <img
                 src={currentMedia.url}
