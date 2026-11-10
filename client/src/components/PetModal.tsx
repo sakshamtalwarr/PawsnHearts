@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Heart,
@@ -10,6 +10,7 @@ import {
   Phone,
   Share2,
   Maximize2,
+  Minimize2,
   Video as VideoIcon,
 } from 'lucide-react';
 import { Animal, AnimalMedia, formatMediaUrl, MediaType } from '../types';
@@ -26,6 +27,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'photo' | 'xray' | 'prescription' | 'bill' | 'video'>('all');
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [imageFit, setImageFit] = useState<'cover' | 'contain'>('cover');
 
   if (!animal) return null;
 
@@ -68,6 +70,18 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
 
   const currentMedia = filteredMedia[activeMediaIndex] || filteredMedia[0] || rawMediaList[0];
 
+  useEffect(() => {
+    if (
+      currentMedia?.media_type === 'xray' ||
+      currentMedia?.media_type === 'bill' ||
+      currentMedia?.media_type === 'prescription'
+    ) {
+      setImageFit('contain');
+    } else {
+      setImageFit('cover');
+    }
+  }, [currentMedia?.media_type, activeMediaIndex]);
+
   const fundsNeeded = Number(animal.funds_needed || 0);
   const fundsRaised = Number(animal.funds_raised || 0);
   const fundPercent = fundsNeeded > 0 ? Math.min(100, Math.round((fundsRaised / fundsNeeded) * 100)) : 0;
@@ -105,27 +119,44 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
             </button>
           </div>
 
-          {/* Media Preview Section */}
-          <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-slate-950 overflow-hidden flex items-center justify-center">
+          {/* Media Preview Section - Generous height & ambient fill to eliminate mobile letterboxing */}
+          <div className="relative aspect-[4/3] sm:aspect-[16/9] w-full min-h-[300px] sm:min-h-[380px] bg-slate-950 overflow-hidden flex items-center justify-center">
+            {/* Ambient blurred backdrop so letterbox gaps never look like an empty black void */}
+            {currentMedia?.media_type !== 'video' && (
+              <div
+                className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-125 pointer-events-none transition-all duration-500"
+                style={{
+                  backgroundImage: `url(${currentMedia?.url || animal.hero_image})`,
+                }}
+              />
+            )}
+
             {currentMedia?.media_type === 'video' ? (
               <video
                 src={currentMedia.url}
                 controls
                 autoPlay
                 playsInline
-                className="w-full h-full object-contain"
+                className="relative z-10 w-full h-full object-contain"
               />
             ) : (
               <img
                 src={currentMedia?.url || animal.hero_image}
                 alt={animal.name}
-                className="w-full h-full object-contain cursor-zoom-in"
+                className={`relative z-10 w-full h-full cursor-zoom-in transition-all duration-300 ${
+                  imageFit === 'cover' ? 'object-cover' : 'object-contain'
+                }`}
                 onClick={() => setLightboxUrl(currentMedia?.url || animal.hero_image || null)}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    animal.hero_image ||
+                    'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800';
+                }}
               />
             )}
 
             {/* Media Type & Caption Tag */}
-            <div className="absolute bottom-2.5 left-2.5 sm:bottom-4 sm:left-4 z-10 bg-slate-900/80 backdrop-blur-md text-white text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 max-w-[80%]">
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-4 sm:left-4 z-20 bg-slate-900/85 backdrop-blur-md text-white text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 max-w-[65%] border border-white/10 shadow-lg">
               <span className="font-bold text-pink-300 uppercase tracking-wider text-[9px] sm:text-[10px]">
                 {currentMedia?.media_type === 'xray'
                   ? '🩻 X-Ray'
@@ -144,16 +175,35 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               )}
             </div>
 
-            {/* Inspect / Zoom Button */}
-            {currentMedia?.media_type !== 'video' && currentMedia?.url && (
-              <button
-                onClick={() => setLightboxUrl(currentMedia.url)}
-                className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white text-xs flex items-center gap-1 font-bold shadow-md"
-                title="Zoom into photo/document"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Zoom</span>
-              </button>
+            {/* Controls Cluster: Fit/Fill Toggle & Zoom */}
+            {currentMedia?.media_type !== 'video' && (
+              <div className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-20 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setImageFit((prev) => (prev === 'cover' ? 'contain' : 'cover'))}
+                  className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
+                  title={imageFit === 'cover' ? 'Show full uncropped image (Fit)' : 'Fill top banner (Fill)'}
+                >
+                  {imageFit === 'cover' ? (
+                    <Minimize2 className="w-3.5 h-3.5 text-pink-300" />
+                  ) : (
+                    <Maximize2 className="w-3.5 h-3.5 text-pink-300" />
+                  )}
+                  <span className="hidden sm:inline">{imageFit === 'cover' ? 'Fit' : 'Fill'}</span>
+                </button>
+
+                {currentMedia?.url && (
+                  <button
+                    type="button"
+                    onClick={() => setLightboxUrl(currentMedia.url)}
+                    className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
+                    title="Zoom into photo/document"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Zoom</span>
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Carousel Arrows */}
@@ -164,7 +214,8 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     e.stopPropagation();
                     setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : filteredMedia.length - 1));
                   }}
-                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors"
+                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors shadow-md"
+                  aria-label="Previous photo"
                 >
                   <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
@@ -173,13 +224,57 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     e.stopPropagation();
                     setActiveMediaIndex((prev) => (prev < filteredMedia.length - 1 ? prev + 1 : 0));
                   }}
-                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors"
+                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors shadow-md"
+                  aria-label="Next photo"
                 >
                   <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             )}
           </div>
+
+          {/* Thumbnail Gallery Strip (Shows all uploaded photos & videos) */}
+          {rawMediaList.length > 1 && (
+            <div className="bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center gap-2.5 overflow-x-auto scrollbar-none">
+              <span className="text-[10px] uppercase font-black text-pink-400 tracking-wider font-display shrink-0 pl-0.5 flex items-center gap-1">
+                <span>📸</span>
+                <span>Gallery ({rawMediaList.length}):</span>
+              </span>
+              {filteredMedia.map((item, idx) => {
+                const isActive = activeMediaIndex === idx;
+                return (
+                  <button
+                    key={item.id || idx}
+                    type="button"
+                    onClick={() => setActiveMediaIndex(idx)}
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                      isActive
+                        ? 'border-pink-500 scale-105 shadow-md shadow-pink-500/40 ring-2 ring-pink-400/50'
+                        : 'border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500'
+                    }`}
+                    title={item.caption || `View item ${idx + 1}`}
+                  >
+                    {item.media_type === 'video' ? (
+                      <div className="w-full h-full bg-slate-800 flex items-center justify-center text-white">
+                        <VideoIcon className="w-5 h-5 text-pink-400" />
+                      </div>
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt={item.caption || `Photo ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    {item.media_type === 'video' && (
+                      <span className="absolute bottom-1 right-1 bg-black/80 rounded px-1 text-[8px] text-pink-300 font-bold">
+                        VID
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Categorized Media Filter Tabs - Scrollable on mobile */}
           {rawMediaList.length > 1 && (
@@ -317,8 +412,13 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               )}
 
               {/* Rescue Story */}
-              <div className="mb-5">
-                <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-1.5 font-display">About & Rescue Story</h4>
+              <div className="mb-5 space-y-2.5">
+                <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-1 font-display">About & Rescue Story</h4>
+                {animal.short_desc && animal.full_story && animal.short_desc !== animal.full_story && (
+                  <p className="text-pink-900 bg-pink-50/80 border-l-4 border-pink-500 p-3 rounded-r-xl text-xs sm:text-sm font-medium leading-relaxed">
+                    {animal.short_desc}
+                  </p>
+                )}
                 <p className="text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed whitespace-pre-line font-sans">
                   {animal.full_story || animal.short_desc || 'No detailed background provided.'}
                 </p>

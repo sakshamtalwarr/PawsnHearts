@@ -7,7 +7,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL;
+const DEFAULT_NEON_POOLED_URL = 'postgresql://neondb_owner:REDACTED_POSTGRES_PASSWORD@ep-divine-union-beznv92r-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL || DEFAULT_NEON_POOLED_URL;
 const isPlaceholderUrl = !connectionString || connectionString.includes('YOUR_PASSWORD') || connectionString.includes('ep-random-name');
 
 if (isPlaceholderUrl) {
@@ -128,17 +129,58 @@ Once safe in a warm dry box, the mother realized she and her babies were safe an
       slug: 'tintin',
       category: 'treatment',
       status: 'urgent',
-      tags: ['Stray', 'Accident Emergency', 'Hip Fracture', 'Surgery', 'Kumarapark', 'Bengaluru'],
-      short_desc: 'Rescued indie dog hit by a car in Kumarapark. Broken hip socket urgently needs surgery.',
-      full_story: 'Tin Tin was adopted as a stray puppy and grew into a deeply loved companion. During her walk in the Kumarapark neighborhood, a car hit her. X-rays confirmed a fractured hip socket. Emergency surgery is required.',
-      medical_details: 'X-rays confirm fractured hip socket. Emergency orthopedic surgery scheduled.',
+      tags: ['Stray', 'Accident Emergency', 'Hip Fracture', 'Surgery', 'Kumarapark', 'Bengaluru', 'Indie Dog'],
+      short_desc: 'Tin Tin is a rescued indie dog who was tragically hit by a car in Kumarapark. She suffered a broken hip socket and urgently needs emergency surgery tomorrow to be able to walk again.',
+      full_story: 'Tin Tin was adopted as a stray puppy by my cousin and grew into a deeply loved companion. Yesterday, during her regular walk in the Kumarapark neighborhood, a car came out of nowhere and hit her. We rushed her to the vet, where X-rays confirmed the heartbreaking news: her hip socket is severely broken and fractured. She is currently in a lot of pain and her surgery is scheduled for tomorrow. We are urgently trying to pool together the funds needed to cover her operation and the subsequent rehabilitation so she can get back on her feet and have a second chance at a happy life.',
+      medical_details: 'X-rays confirm a broken and fractured hip socket. Emergency orthopedic surgery is scheduled for tomorrow to repair the damage. Post-operative care requires a mandatory 1-month strict bedrest period for proper healing and rehabilitation.',
       funds_needed: 12000,
       funds_raised: 0,
       hero_image: 'https://res.cloudinary.com/dp2kretaw/image/upload/v1794288260/pawsnhearts/animals/izkivbzbeocebllsifej.jpg',
       is_featured: false,
       sort_order: 0,
       created_at: '2026-11-10T05:25:16.993Z',
-      media: [],
+      media: [
+        {
+          id: 'f83623f6-b841-4777-b90a-7fc566ddb234',
+          animal_id: '455ee0db-5529-455b-a044-ad436745767b',
+          media_type: 'photo',
+          url: 'https://res.cloudinary.com/dp2kretaw/image/upload/v1794299716/pawsnhearts/animals/xgr8qrprqwr6edary9iv.jpg',
+          caption: 'TinTin resting in bed after accident',
+          sort_order: 0,
+        },
+        {
+          id: 'b0797efd-64f5-4ff2-a13a-c02344928fe4',
+          animal_id: '455ee0db-5529-455b-a044-ad436745767b',
+          media_type: 'photo',
+          url: 'https://res.cloudinary.com/dp2kretaw/image/upload/v1794299717/pawsnhearts/animals/r0yy3hsc2qumyys8etkn.jpg',
+          caption: 'TinTin injury close-up',
+          sort_order: 1,
+        },
+        {
+          id: '35c976c8-b3ea-429c-9a9e-eb513f32915f',
+          animal_id: '455ee0db-5529-455b-a044-ad436745767b',
+          media_type: 'photo',
+          url: 'https://res.cloudinary.com/dp2kretaw/image/upload/v1794299716/pawsnhearts/animals/pf9gyaqeaad26hsvwjql.jpg',
+          caption: 'TinTin veterinary medical assessment',
+          sort_order: 2,
+        },
+        {
+          id: '4bef38ea-5133-41d9-a7be-8094e20802f5',
+          animal_id: '455ee0db-5529-455b-a044-ad436745767b',
+          media_type: 'photo',
+          url: 'https://res.cloudinary.com/dp2kretaw/image/upload/v1794299717/pawsnhearts/animals/nc1obj2olddscbe3vqvi.jpg',
+          caption: 'TinTin comfortable in recovery bed',
+          sort_order: 3,
+        },
+        {
+          id: 'a7cb9ee3-8753-430c-a8b4-b2a12242e89f',
+          animal_id: '455ee0db-5529-455b-a044-ad436745767b',
+          media_type: 'video',
+          url: 'https://res.cloudinary.com/dp2kretaw/video/upload/v1794299716/pawsnhearts/animals/dux3oax3aqss1feuh9if.mp4',
+          caption: 'TinTin movement video',
+          sort_order: 4,
+        },
+      ],
     },
     {
       id: 'a0000000-0000-0000-0000-000000000005',
@@ -324,6 +366,35 @@ function handleFallbackQuery(text: string, params?: any[]): any {
     const idx = fallbackStore.animals.findIndex((a) => a.id === id);
     const deleted = idx !== -1 ? fallbackStore.animals.splice(idx, 1)[0] : null;
     return { rows: deleted ? [deleted] : [], rowCount: deleted ? 1 : 0 };
+  }
+
+  // Animal Media
+  if (norm.includes('insert into animal_media')) {
+    const animalId = params?.[0];
+    const newMedia = {
+      id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      animal_id: animalId,
+      media_type: params?.[1] || 'photo',
+      url: params?.[2] || '',
+      caption: params?.[3] || '',
+      sort_order: params?.[4] || 0,
+      created_at: new Date().toISOString(),
+    };
+    const animal = fallbackStore.animals.find((a) => a.id === animalId);
+    if (animal) {
+      if (!Array.isArray(animal.media)) animal.media = [];
+      animal.media.push(newMedia);
+    }
+    return { rows: [newMedia], rowCount: 1 };
+  }
+
+  if (norm.includes('delete from animal_media where animal_id = $1')) {
+    const animalId = params?.[0];
+    const animal = fallbackStore.animals.find((a) => a.id === animalId);
+    if (animal) {
+      animal.media = [];
+    }
+    return { rows: [], rowCount: 1 };
   }
 
   // Ledger

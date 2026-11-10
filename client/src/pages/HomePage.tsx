@@ -96,6 +96,13 @@ export const HomePage: React.FC = () => {
           // Local storage quota handled
         }
 
+        // If an animal profile modal is currently open, refresh it with latest data
+        setSelectedAnimal((current) => {
+          if (!current) return current;
+          const fresh = fetchedAnimals.find((a) => a.id === current.id || a.slug === current.slug);
+          return fresh || current;
+        });
+
         checkDeepLink(fetchedAnimals);
       })
       .catch((err) => {
@@ -103,6 +110,19 @@ export const HomePage: React.FC = () => {
         console.log('Background sync in progress:', err.message);
       });
   }, [slug, location.search]);
+
+  const handleSelectAnimal = async (animal: Animal) => {
+    setSelectedAnimal(animal);
+    try {
+      const res = await animalsApi.getBySlug(animal.slug || animal.id);
+      if (res?.animal) {
+        setSelectedAnimal(res.animal);
+        setAnimals((prev) => prev.map((a) => (a.id === res.animal.id ? res.animal : a)));
+      }
+    } catch {
+      // already showing initial animal data
+    }
+  };
 
   const handleDonateForAnimal = (animalName: string) => {
     setActiveAnimalForDonation(animalName);
@@ -150,7 +170,7 @@ export const HomePage: React.FC = () => {
         settings={settings}
         featuredAnimal={featuredAnimal}
         onDonateForAnimal={handleDonateForAnimal}
-        onSelectAnimal={setSelectedAnimal}
+        onSelectAnimal={handleSelectAnimal}
       />
 
       {/* 1. Urgent Medical Treatments Section */}
@@ -180,7 +200,7 @@ export const HomePage: React.FC = () => {
               <PetCard
                 key={animal.id}
                 animal={animal}
-                onSelect={setSelectedAnimal}
+                onSelect={handleSelectAnimal}
                 onDonate={handleDonateForAnimal}
               />
             ))}
@@ -217,7 +237,7 @@ export const HomePage: React.FC = () => {
               <PetCard
                 key={animal.id}
                 animal={animal}
-                onSelect={setSelectedAnimal}
+                onSelect={handleSelectAnimal}
                 onDonate={handleDonateForAnimal}
               />
             ))}
@@ -228,7 +248,7 @@ export const HomePage: React.FC = () => {
       <PetDivider />
 
       {/* 3. Success Stories */}
-      <SuccessStories animals={animals} onSelect={setSelectedAnimal} />
+      <SuccessStories animals={animals} onSelect={handleSelectAnimal} />
 
       <PetDivider />
 

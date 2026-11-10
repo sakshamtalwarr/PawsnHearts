@@ -26,7 +26,53 @@ export const INITIAL_ANIMALS: Animal[] = [
     "sort_order": 0,
     "created_at": "2026-11-10T05:25:16.993Z",
     "updated_at": "2026-11-10T05:25:16.993Z",
-    "media": []
+    "media": [
+      {
+        "id": "f83623f6-b841-4777-b90a-7fc566ddb234",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299716/pawsnhearts/animals/xgr8qrprqwr6edary9iv.jpg",
+        "caption": "TinTin resting in bed after accident",
+        "sort_order": 0,
+        "created_at": "2026-11-10T08:35:25.792Z"
+      },
+      {
+        "id": "b0797efd-64f5-4ff2-a13a-c02344928fe4",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299717/pawsnhearts/animals/r0yy3hsc2qumyys8etkn.jpg",
+        "caption": "TinTin injury close-up",
+        "sort_order": 1,
+        "created_at": "2026-11-10T08:35:26.011Z"
+      },
+      {
+        "id": "35c976c8-b3ea-429c-9a9e-eb513f32915f",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299716/pawsnhearts/animals/pf9gyaqeaad26hsvwjql.jpg",
+        "caption": "TinTin veterinary medical assessment",
+        "sort_order": 2,
+        "created_at": "2026-11-10T08:35:26.230Z"
+      },
+      {
+        "id": "4bef38ea-5133-41d9-a7be-8094e20802f5",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299717/pawsnhearts/animals/nc1obj2olddscbe3vqvi.jpg",
+        "caption": "TinTin comfortable in recovery bed",
+        "sort_order": 3,
+        "created_at": "2026-11-10T08:35:26.449Z"
+      },
+      {
+        "id": "a7cb9ee3-8753-430c-a8b4-b2a12242e89f",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "video",
+        "url": "https://res.cloudinary.com/dp2kretaw/video/upload/v1794299716/pawsnhearts/animals/dux3oax3aqss1feuh9if.mp4",
+        "caption": "TinTin movement & condition video",
+        "sort_order": 4,
+        "created_at": "2026-11-10T08:35:26.668Z"
+      }
+    ]
   },
   {
     "id": "1dbc8d1a-e00d-4210-9b88-c1aef11bc535",

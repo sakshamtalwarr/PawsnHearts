@@ -34,7 +34,7 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between">
           {/* Animated Logo */}
           <a href="/#" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-300 shadow-sm shrink-0 bg-pink-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-pink-300 shadow-sm shrink-0 bg-pink-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <video
                 autoPlay
                 loop
