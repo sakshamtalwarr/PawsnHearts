@@ -1,7 +1,10 @@
 import { Pool } from 'pg';
+import path from 'path';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
 const connectionString = process.env.DATABASE_URL;
