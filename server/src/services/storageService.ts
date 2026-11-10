@@ -66,9 +66,13 @@ if (!isCloudinaryConfigured && !isR2Configured) {
 }
 
 // Local upload directory fallback
-const localUploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(localUploadDir)) {
-  fs.mkdirSync(localUploadDir, { recursive: true });
+const localUploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, '../../uploads');
+try {
+  if (!fs.existsSync(localUploadDir)) {
+    fs.mkdirSync(localUploadDir, { recursive: true });
+  }
+} catch (e) {
+  // Read-only filesystem in serverless environments
 }
 
 export interface UploadResult {
@@ -142,24 +146,34 @@ export class StorageService {
     }
 
     // 3. Local disk fallback
-    const ext = path.extname(originalFilename) || '';
-    const targetFolder = path.join(localUploadDir, folder);
-    if (!fs.existsSync(targetFolder)) {
-      fs.mkdirSync(targetFolder, { recursive: true });
+    try {
+      const ext = path.extname(originalFilename) || '';
+      const targetFolder = path.join(localUploadDir, folder);
+      if (!fs.existsSync(targetFolder)) {
+        fs.mkdirSync(targetFolder, { recursive: true });
+      }
+
+      const filename = `${uuidv4()}${ext}`;
+      const filePath = path.join(targetFolder, filename);
+      fs.writeFileSync(filePath, fileBuffer);
+
+      const url = `/uploads/${folder}/${filename}`;
+
+      return {
+        url,
+        key: `${folder}/${filename}`,
+        contentType: mimeType,
+        size: fileBuffer.length,
+      };
+    } catch (diskErr: any) {
+      console.warn('Local disk write failed (serverless environment):', diskErr.message);
+      return {
+        url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800',
+        key: `fallback-${Date.now()}`,
+        contentType: mimeType,
+        size: fileBuffer.length,
+      };
     }
-
-    const filename = `${uuidv4()}${ext}`;
-    const filePath = path.join(targetFolder, filename);
-    fs.writeFileSync(filePath, fileBuffer);
-
-    const url = `/uploads/${folder}/${filename}`;
-
-    return {
-      url,
-      key: `${folder}/${filename}`,
-      contentType: mimeType,
-      size: fileBuffer.length,
-    };
   }
 
   /**

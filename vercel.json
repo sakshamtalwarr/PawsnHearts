@@ -13,7 +13,9 @@
     },
     "server": {
       "root": "server",
-      "entrypoint": "index.js"
+      "entrypoint": "index.js",
+      "installCommand": "npm install",
+      "buildCommand": "npm run build"
     }
   },
   "rewrites": [
