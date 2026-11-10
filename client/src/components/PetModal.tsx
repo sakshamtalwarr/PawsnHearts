@@ -29,6 +29,11 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [imageFit, setImageFit] = useState<'cover' | 'contain'>('cover');
 
+  useEffect(() => {
+    setActiveMediaIndex(0);
+    setSelectedFilter('all');
+  }, [animal?.id, animal?.slug]);
+
   if (!animal) return null;
 
   // Build full media list including hero_image
@@ -39,23 +44,52 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
       id: 'hero',
       media_type: 'photo',
       url: formatMediaUrl(animal.hero_image),
-      caption: `${animal.name}'s profile photo`,
+      caption: `${animal.name || 'Rescue'}'s profile photo`,
       sort_order: 0,
     });
   }
 
-  if (animal.media && animal.media.length > 0) {
-    animal.media.forEach((m, idx) => {
-      if (m.url !== animal.hero_image) {
+  // Parse media safely whether it's an array, a JSON string from Postgres, or null
+  let parsedMedia: any[] = [];
+  if (Array.isArray(animal.media)) {
+    parsedMedia = animal.media;
+  } else if (typeof animal.media === 'string') {
+    try {
+      parsedMedia = JSON.parse(animal.media);
+    } catch {
+      parsedMedia = [];
+    }
+  }
+
+  if (Array.isArray(parsedMedia)) {
+    parsedMedia.forEach((m, idx) => {
+      if (!m) return;
+      const mediaUrl = typeof m === 'string' ? m : m?.url;
+      if (!mediaUrl || typeof mediaUrl !== 'string') return;
+
+      const cleanUrl = formatMediaUrl(mediaUrl);
+      if (cleanUrl !== formatMediaUrl(animal.hero_image)) {
+        const isVid = cleanUrl.endsWith('.mp4') || cleanUrl.includes('/video/');
+        const mediaType = (typeof m === 'object' && m?.media_type) ? m.media_type : isVid ? 'video' : 'photo';
         rawMediaList.push({
-          ...m,
-          url: formatMediaUrl(m.url),
-          media_type: m.media_type || (m.url.endsWith('.mp4') ? 'video' : 'photo'),
-          sort_order: m.sort_order ?? idx + 1,
+          id: (typeof m === 'object' && m?.id) ? String(m.id) : `media-${idx}`,
+          media_type: mediaType,
+          url: cleanUrl,
+          caption: (typeof m === 'object' && m?.caption) ? String(m.caption) : '',
+          sort_order: (typeof m === 'object' && m?.sort_order !== undefined) ? Number(m.sort_order) : idx + 1,
         });
       }
     });
   }
+
+  // Parse tags safely
+  const safeTags: string[] = Array.isArray(animal.tags)
+    ? animal.tags
+    : typeof animal.tags === 'string'
+    ? (animal.tags as string).split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  const safeStatus = (animal.status || 'available').toString();
 
   // Filtered media by category tab
   const filteredMedia = rawMediaList.filter((m) => {
@@ -375,14 +409,14 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                 </div>
 
                 <span className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-black bg-pink-100 text-pink-800 border border-pink-200">
-                  {animal.status.replace('_', ' ').toUpperCase()}
+                  {safeStatus.replace('_', ' ').toUpperCase()}
                 </span>
               </div>
 
               {/* Tags */}
-              {animal.tags && animal.tags.length > 0 && (
+              {safeTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
-                  {animal.tags.map((t, idx) => (
+                  {safeTags.map((t, idx) => (
                     <span
                       key={idx}
                       className="bg-pink-50 text-pink-700 text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full border border-pink-100"

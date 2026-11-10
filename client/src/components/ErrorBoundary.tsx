@@ -32,15 +32,29 @@ export class ErrorBoundary extends Component<Props, State> {
             <h2 className="text-xl font-black text-slate-900 mb-2 font-display">
               Oops! Something went slightly woof!
             </h2>
-            <p className="text-slate-600 text-xs sm:text-sm mb-6 font-medium">
+            <p className="text-slate-600 text-xs sm:text-sm mb-4 font-medium">
               We encountered a minor display hiccup. Click below to reload cleanly.
             </p>
+            {this.state.error && (
+              <details className="text-left mb-5">
+                <summary className="text-[11px] text-pink-600 font-bold cursor-pointer hover:underline">
+                  View technical details
+                </summary>
+                <pre className="mt-2 text-[10px] font-mono bg-rose-50 text-rose-700 p-2.5 rounded-xl border border-rose-200 overflow-auto max-h-32">
+                  {this.state.error.message || String(this.state.error)}
+                </pre>
+              </details>
+            )}
             <button
               onClick={() => {
-                localStorage.clear();
+                try {
+                  localStorage.removeItem('paws_animals');
+                  localStorage.removeItem('paws_stats');
+                  localStorage.removeItem('paws_settings');
+                } catch {}
                 window.location.href = '/';
               }}
-              className="px-6 py-2.5 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs font-display shadow-md transition-all"
+              className="px-6 py-2.5 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs font-display shadow-md transition-all active:scale-95"
             >
               Reload Page
             </button>

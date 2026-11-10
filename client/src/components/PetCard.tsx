@@ -12,13 +12,19 @@ interface PetCardProps {
 export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) => {
   const [isShareOpen, setIsShareOpen] = useState(false);
 
-  const isVideo = animal.media?.some((m) => m.media_type === 'video');
+  const isVideo = Array.isArray(animal.media) && animal.media.some((m) => m?.media_type === 'video' || (typeof m?.url === 'string' && m.url.endsWith('.mp4')));
   const fallbackImg = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800';
   const imgUrl = formatMediaUrl(animal.hero_image);
 
   const fundsNeeded = Number(animal.funds_needed || 0);
   const fundsRaised = Number(animal.funds_raised || 0);
   const fundPercent = fundsNeeded > 0 ? Math.min(100, Math.round((fundsRaised / fundsNeeded) * 100)) : 0;
+
+  const safeTags: string[] = Array.isArray(animal.tags)
+    ? animal.tags
+    : typeof animal.tags === 'string'
+    ? (animal.tags as string).split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
 
   return (
     <>
@@ -99,9 +105,9 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
             </p>
 
             {/* Tags */}
-            {animal.tags && animal.tags.length > 0 && (
+            {safeTags.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3.5">
-                {animal.tags.slice(0, 3).map((tag, idx) => (
+                {safeTags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
                     className="bg-pink-50 text-pink-700 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border border-pink-100"
