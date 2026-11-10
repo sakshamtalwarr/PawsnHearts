@@ -106,8 +106,27 @@ app.get(['/pet/:slug', '/animals/:slug', '/share/pet/:slug'], async (req, res, n
     );
 
     if (result.rows.length === 0) {
+      // General rescue fallback if specific slug not matched
+      const host = req.get('host') || 'pawsnhearts.vercel.app';
+      const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+      const baseUrl = `${protocol}://${host}`;
       if (isSocialBot) {
-        res.status(404).send('Rescue case not found');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Paws&Hearts | Bengaluru Street Dog Rescue & Medical Rehab</title>
+  <meta property="og:title" content="Paws&Hearts | Bengaluru Street Dog Rescue" />
+  <meta property="og:description" content="100% transparent street dog rescue in Bengaluru. Track every single rupee live." />
+  <meta property="og:image" content="https://res.cloudinary.com/dp2kretaw/image/upload/v1794288260/pawsnhearts/animals/izkivbzbeocebllsifej.jpg" />
+  <meta property="og:url" content="${baseUrl}" />
+</head>
+<body>
+  <h2>Paws&Hearts Bengaluru Street Dog Rescue</h2>
+  <p><a href="${baseUrl}">Visit Paws&Hearts</a></p>
+</body>
+</html>`);
         return;
       }
       res.redirect('/#treatment');
@@ -166,18 +185,35 @@ app.get(['/pet/:slug', '/animals/:slug', '/share/pet/:slug'], async (req, res, n
     res.redirect(`/?pet=${encodeURIComponent(animal.slug)}`);
   } catch (err) {
     console.error('Social share error:', err);
-    next(err);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Paws&Hearts | Bengaluru Street Dog Rescue & Medical Rehab</title>
+  <meta property="og:title" content="Paws&Hearts | Bengaluru Street Dog Rescue" />
+  <meta property="og:description" content="100% transparent street dog rescue in Bengaluru. Track every single rupee live." />
+  <meta property="og:image" content="https://res.cloudinary.com/dp2kretaw/image/upload/v1794288260/pawsnhearts/animals/izkivbzbeocebllsifej.jpg" />
+  <meta http-equiv="refresh" content="0;url=/" />
+</head>
+<body>
+  <h2>Paws&Hearts Bengaluru Street Dog Rescue</h2>
+  <p><a href="/">Visit Paws&Hearts</a></p>
+</body>
+</html>`);
   }
 });
 
-// Production: Serve React client build
-if (process.env.NODE_ENV === 'production') {
+// Production: Serve React client build (standalone Render / VPS mode only, not Vercel multi-service)
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   const clientDist = path.join(__dirname, '../../client/dist');
-  app.use(express.static(clientDist));
+  if (fs.existsSync(clientDist)) {
+    app.use(express.static(clientDist));
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
-  });
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(clientDist, 'index.html'));
+    });
+  }
 }
 
 // Error handling middleware
@@ -188,11 +224,20 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-if (process.env.VERCEL !== '1') {
+const isServerless = Boolean(
+  process.env.VERCEL ||
+  process.env.NOW_REGION ||
+  process.env.VERCEL_ENV ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME
+);
+
+if (!isServerless && process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`🐾 Paws&Hearts server listening on port ${PORT}`);
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
 
+// CommonJS and ES Module export compatibility for Vercel
+module.exports = app;
 export default app;

@@ -7,7 +7,9 @@
     },
     "server": {
       "root": "server",
-      "framework": "express"
+      "framework": "express",
+      "buildCommand": "npm run build",
+      "entrypoint": "dist/index.js"
     }
   },
   "rewrites": [
@@ -18,7 +20,27 @@
       }
     },
     {
-      "source": "/pet/(.*)",
+      "source": "/pet/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|whatsapp|telegrambot|twitterbot|linkedinbot|discordbot|slackbot|applebot|googlebot|bingbot|pinterest).*"
+        }
+      ],
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/animals/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|whatsapp|telegrambot|twitterbot|linkedinbot|discordbot|slackbot|applebot|googlebot|bingbot|pinterest).*"
+        }
+      ],
       "destination": {
         "service": "server"
       }

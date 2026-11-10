@@ -23,21 +23,13 @@ export const Hero: React.FC<HeroProps> = ({
     ? '₹' + Number(stats.total_raised).toLocaleString('en-IN')
     : '₹10,751';
 
-  // Fallback animal if none loaded yet
-  const urgentDog = featuredAnimal || {
-    name: 'TinTin',
-    category: 'treatment',
-    status: 'urgent',
-    short_desc: 'Rescued indie dog hit by a car in Kumarapark. Broken hip socket urgently needs surgery.',
-    funds_needed: 12000,
-    funds_raised: 0,
-    hero_image: 'https://res.cloudinary.com/dp2kretaw/image/upload/v1794288260/pawsnhearts/animals/izkivbzbeocebllsifej.jpg',
-  };
-
-  const neededNum = Number(urgentDog.funds_needed || 12000);
-  const raisedNum = Number(urgentDog.funds_raised || 0);
+  // Dynamically display the featured animal provided by parent
+  const urgentDog = featuredAnimal || null;
+  const neededNum = Number(urgentDog?.funds_needed || 0);
+  const raisedNum = Number(urgentDog?.funds_raised || 0);
   const percent = neededNum > 0 ? Math.min(100, Math.round((raisedNum / neededNum) * 100)) : 0;
-  const dogImg = formatMediaUrl(urgentDog.hero_image);
+  const dogImg = urgentDog?.hero_image ? formatMediaUrl(urgentDog.hero_image) : '/chikoo.png';
+  const dogName = urgentDog?.name || 'Street Rescues';
 
   return (
     <div className="relative min-h-[90vh] flex flex-col justify-center items-center pt-24 sm:pt-28 pb-12 sm:pb-20 px-3.5 sm:px-6 overflow-hidden">
@@ -103,11 +95,11 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-2">
               <a
                 href="#donate"
-                onClick={() => onDonateForAnimal && onDonateForAnimal(urgentDog.name)}
+                onClick={() => onDonateForAnimal && urgentDog && onDonateForAnimal(urgentDog.name)}
                 className="px-7 py-4 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white font-display font-bold text-sm sm:text-base shadow-xl shadow-pink-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
               >
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0" />
-                <span>Sponsor {urgentDog.name}'s Surgery</span>
+                <span>{urgentDog ? `Sponsor ${urgentDog.name}` : 'Sponsor Emergency Care'}</span>
               </a>
               <a
                 href="#adopt"
@@ -133,16 +125,16 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
           </div>
 
-          {/* Right Column: LATEST / URGENT RESCUE SPOTLIGHT CARD (TinTin) */}
+          {/* Right Column: LATEST / URGENT RESCUE SPOTLIGHT CARD */}
           <div className="lg:col-span-5 relative flex justify-center">
             <div
-              onClick={() => onSelectAnimal && featuredAnimal && onSelectAnimal(featuredAnimal)}
+              onClick={() => onSelectAnimal && urgentDog && onSelectAnimal(urgentDog)}
               className="group relative w-full max-w-md aspect-[4/5] sm:aspect-square bg-slate-900 rounded-[32px] sm:rounded-[40px] shadow-2xl border-4 border-white/90 shadow-pink-200/60 overflow-hidden cursor-pointer hover:scale-[1.01] transition-all flex flex-col justify-between"
             >
-              {/* High-Resolution Photo of the Urgent Rescue Dog */}
+              {/* High-Resolution Photo of the Rescue Dog */}
               <img
                 src={dogImg}
-                alt={urgentDog.name}
+                alt={dogName}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
 
@@ -151,14 +143,18 @@ export const Hero: React.FC<HeroProps> = ({
 
               {/* Top Floating Badges */}
               <div className="relative z-10 p-4 sm:p-5 flex items-center justify-between gap-2">
-                <span className="bg-rose-600 text-white text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 animate-pulse font-display">
+                <span className={`text-white text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 font-display ${
+                  urgentDog?.status === 'urgent' ? 'bg-rose-600 animate-pulse' : 'bg-pink-600'
+                }`}>
                   <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                  🚨 URGENT CASE
+                  {urgentDog?.status === 'urgent' ? '🚨 URGENT CASE' : '🐾 FEATURED RESCUE'}
                 </span>
 
                 <span className="bg-slate-950/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 border border-white/20 font-display">
                   <MapPin className="w-3.5 h-3.5 text-pink-400" />
-                  <span>Kumarapark, BLR</span>
+                  <span>
+                    {urgentDog?.tags?.find((t) => /park|blr|bengaluru|nagar|road/i.test(t)) || 'Bengaluru, IN'}
+                  </span>
                 </span>
               </div>
 
@@ -167,33 +163,37 @@ export const Hero: React.FC<HeroProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-white flex items-center gap-2">
-                      <span>{urgentDog.name}</span>
+                      <span>{dogName}</span>
                       <span className="text-base sm:text-lg text-pink-300 font-bold">🐶</span>
                     </h3>
                     <span className="text-[11px] font-black uppercase tracking-wider bg-rose-500/30 text-rose-300 border border-rose-400/40 px-2.5 py-0.5 rounded-full">
-                      Hip Socket Fracture
+                      {urgentDog?.tags?.[0] || (urgentDog?.category === 'treatment' ? 'Medical Care' : 'Adoption')}
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-200 line-clamp-2 mt-1 leading-relaxed font-medium">
-                    {urgentDog.short_desc}
+                    {urgentDog?.short_desc || 'Street dog rescued in Bengaluru undergoing medical care and rehabilitation.'}
                   </p>
                 </div>
 
                 {/* Live Funding Meter */}
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20">
-                  <div className="flex justify-between text-xs font-bold mb-1.5 font-display">
-                    <span className="text-pink-200">Surgery Funding Goal</span>
-                    <span className="text-white font-black">
-                      ₹{raisedNum.toLocaleString('en-IN')} / ₹{neededNum.toLocaleString('en-IN')} ({percent}%)
-                    </span>
+                {neededNum > 0 && (
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20">
+                    <div className="flex justify-between text-xs font-bold mb-1.5 font-display">
+                      <span className="text-pink-200">
+                        {urgentDog?.category === 'treatment' ? 'Medical Treatment Goal' : 'Care Goal'}
+                      </span>
+                      <span className="text-white font-black">
+                        ₹{raisedNum.toLocaleString('en-IN')} / ₹{neededNum.toLocaleString('en-IN')} ({percent}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-black/40 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(percent, 8)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-black/40 rounded-full h-2.5 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.max(percent, 8)}%` }}
-                    />
-                  </div>
-                </div>
+                )}
 
                 {/* Action Buttons on Card */}
                 <div className="flex items-center gap-2 pt-1">
@@ -201,22 +201,22 @@ export const Hero: React.FC<HeroProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onDonateForAnimal) onDonateForAnimal(urgentDog.name);
+                      if (onDonateForAnimal && urgentDog) onDonateForAnimal(urgentDog.name);
                     }}
                     className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-pink-500/30 flex items-center justify-center gap-1.5 font-display active:scale-95 transition-all"
                   >
                     <Heart className="w-4 h-4 fill-white" />
-                    <span>Sponsor {urgentDog.name}</span>
+                    <span>Sponsor {dogName}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onSelectAnimal && featuredAnimal) onSelectAnimal(featuredAnimal);
+                      if (onSelectAnimal && urgentDog) onSelectAnimal(urgentDog);
                     }}
                     className="px-3.5 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center justify-center gap-1 transition-all border border-white/30"
-                    title="View Story & X-Rays"
+                    title="View Story & Details"
                   >
                     <Eye className="w-4 h-4" />
                     <span className="hidden sm:inline">Details</span>
@@ -248,7 +248,9 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-display">
               {stats?.active_treatments || 1} Active
             </div>
-            <div className="text-[10px] text-rose-600 font-semibold mt-0.5">{urgentDog.name} Surgery</div>
+            <div className="text-[10px] text-rose-600 font-semibold mt-0.5">
+              {urgentDog ? `${dogName} Case` : 'Active Rescues'}
+            </div>
           </div>
 
           <div className="bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-5 text-slate-800 border border-pink-200/80 shadow-sm hover:-translate-y-1 transition-transform">

@@ -43,6 +43,16 @@ export const HomePage: React.FC = () => {
   const [isLiveConnected, setIsLiveConnected] = useState(false);
 
   useEffect(() => {
+    if (selectedAnimal) {
+      document.title = `🐾 Help ${selectedAnimal.name} - ${
+        selectedAnimal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'
+      } | Paws&Hearts`;
+    } else {
+      document.title = '🐾 Help TinTin Walk Again | Emergency Hip Surgery Fund - Paws&Hearts Bengaluru';
+    }
+  }, [selectedAnimal]);
+
+  useEffect(() => {
     // Check initial deep linked pet
     const checkDeepLink = (list: Animal[]) => {
       const params = new URLSearchParams(window.location.search);
@@ -110,7 +120,20 @@ export const HomePage: React.FC = () => {
     (a) => a.category === 'treatment' && a.status !== 'recovered' && a.status !== 'adopted'
   );
 
-  const featuredAnimal = animals.find((a) => a.status === 'urgent') || treatmentAnimals[0] || animals[0];
+  // Dynamically select the most recently added urgent case or active medical case
+  const urgentCases = animals
+    .filter((a) => a.status === 'urgent')
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+
+  const activeTreatmentCases = [...treatmentAnimals].sort(
+    (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+  );
+
+  const newestCases = [...animals].sort(
+    (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+  );
+
+  const featuredAnimal = urgentCases[0] || activeTreatmentCases[0] || newestCases[0] || null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fff0f5] relative">
