@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, ShieldCheck, Menu, X, Lock } from 'lucide-react';
+import { Heart, ShieldCheck, Menu, X, Lock, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ShareModal } from './ShareModal';
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isShareSiteOpen, setIsShareSiteOpen] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -74,6 +76,16 @@ export const Navbar: React.FC = () => {
             <Heart className="w-4 h-4 fill-white" />
             Donate
           </a>
+
+          <button
+            type="button"
+            onClick={() => setIsShareSiteOpen(true)}
+            className="ml-1 px-3 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold flex items-center gap-1 border border-pink-200/80 transition-all font-display hover:scale-105"
+            title="Share Paws&Hearts"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Share</span>
+          </button>
 
           {user ? (
             <Link
@@ -154,6 +166,13 @@ export const Navbar: React.FC = () => {
           </Link>
         </div>
       )}
+
+      {/* Full Website Share Modal */}
+      <ShareModal
+        animal={null}
+        isOpen={isShareSiteOpen}
+        onClose={() => setIsShareSiteOpen(false)}
+      />
     </nav>
   );
 };

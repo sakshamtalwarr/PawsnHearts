@@ -36,12 +36,15 @@ CREATE TABLE IF NOT EXISTS animals (
 CREATE TABLE IF NOT EXISTS animal_media (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
-  media_type VARCHAR(20) NOT NULL DEFAULT 'image', -- 'image' or 'video'
+  media_type VARCHAR(50) NOT NULL DEFAULT 'image', -- 'photo', 'video', 'xray', 'prescription', 'bill'
   url TEXT NOT NULL,
   caption TEXT,
   sort_order INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure media_type is VARCHAR(50) if table was already created
+ALTER TABLE animal_media ALTER COLUMN media_type TYPE VARCHAR(50);
 
 -- Transparency Ledger Table (Donations & Vet Expenses)
 CREATE TABLE IF NOT EXISTS ledger_entries (

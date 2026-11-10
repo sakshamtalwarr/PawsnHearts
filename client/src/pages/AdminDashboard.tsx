@@ -17,9 +17,17 @@ import {
   Save,
   X,
   FileText,
+  Video,
+  Activity,
+  ArrowUp,
+  ArrowDown,
+  Filter,
+  Check,
+  Smartphone,
+  Eye,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Animal, LedgerEntry, Stats, SiteSettings } from '../types';
+import { Animal, AnimalMedia, LedgerEntry, Stats, SiteSettings, MediaType } from '../types';
 import { animalsApi, ledgerApi, statsApi, uploadApi } from '../api/client';
 
 export const AdminDashboard: React.FC = () => {
@@ -27,6 +35,7 @@ export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'animals' | 'ledger' | 'settings'>('overview');
+  const [ledgerFilter, setLedgerFilter] = useState<'all' | 'pending' | 'verified' | 'expense'>('all');
 
   // Data states
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -40,11 +49,13 @@ export const AdminDashboard: React.FC = () => {
     emergency_banner: '',
   });
 
-  // Modal states
+  // Animal Modal state
   const [isAnimalModalOpen, setIsAnimalModalOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Partial<Animal> | null>(null);
+
+  // Ledger Modal state (for Adding Custom or Editing Existing)
   const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
-  const [newLedgerEntry, setNewLedgerEntry] = useState<Partial<LedgerEntry>>({
+  const [editingLedgerEntry, setEditingLedgerEntry] = useState<Partial<LedgerEntry>>({
     donor_name: '',
     amount: '',
     entry_type: 'donation',
@@ -54,6 +65,7 @@ export const AdminDashboard: React.FC = () => {
   });
 
   const [uploading, setUploading] = useState(false);
+  const [uploadProgressText, setUploadProgressText] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -133,6 +145,7 @@ export const AdminDashboard: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadProgressText('Uploading hero image...');
     try {
       const res = await uploadApi.uploadSingle(file, 'animals');
       setEditingAnimal((prev) => (prev ? { ...prev, hero_image: res.file.url } : null));
@@ -140,7 +153,94 @@ export const AdminDashboard: React.FC = () => {
       alert(err.message || 'Image upload failed');
     } finally {
       setUploading(false);
+      setUploadProgressText('');
     }
+  };
+
+  // MULTIPLE FILE UPLOAD: Photos, X-Rays, Medical Reports, Clinic Bills, Videos
+  const handleBulkMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileList = Array.from(files);
+    setUploading(true);
+    setUploadProgressText(`Uploading ${fileList.length} files to Cloudinary...`);
+
+    try {
+      const res = await uploadApi.uploadMultiple(fileList, 'animals');
+
+      // Auto-categorize each uploaded file based on filename / extension
+      const newMediaItems: AnimalMedia[] = res.files.map((f, idx) => {
+        const originalName = fileList[idx]?.name || '';
+        const lower = originalName.toLowerCase();
+
+        let type: MediaType = 'photo';
+        if (lower.includes('xray') || lower.includes('x-ray') || lower.includes('scan')) {
+          type = 'xray';
+        } else if (lower.includes('bill') || lower.includes('receipt') || lower.includes('invoice')) {
+          type = 'bill';
+        } else if (lower.includes('presc') || lower.includes('report') || lower.includes('doctor') || lower.endsWith('.pdf')) {
+          type = 'prescription';
+        } else if (lower.endsWith('.mp4') || lower.endsWith('.mov') || lower.endsWith('.webm')) {
+          type = 'video';
+        }
+
+        const cleanCaption = originalName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+
+        return {
+          id: `new-${Date.now()}-${idx}`,
+          media_type: type,
+          url: f.url,
+          caption: cleanCaption,
+          sort_order: (editingAnimal?.media?.length || 0) + idx,
+        };
+      });
+
+      setEditingAnimal((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          media: [...(prev.media || []), ...newMediaItems],
+        };
+      });
+    } catch (err: any) {
+      alert(err.message || 'Multiple file upload failed');
+    } finally {
+      setUploading(false);
+      setUploadProgressText('');
+      e.target.value = '';
+    }
+  };
+
+  const handleUpdateMediaItem = (index: number, updates: Partial<AnimalMedia>) => {
+    setEditingAnimal((prev) => {
+      if (!prev || !prev.media) return prev;
+      const updated = [...prev.media];
+      updated[index] = { ...updated[index], ...updates };
+      return { ...prev, media: updated };
+    });
+  };
+
+  const handleRemoveMediaItem = (index: number) => {
+    setEditingAnimal((prev) => {
+      if (!prev || !prev.media) return prev;
+      const updated = prev.media.filter((_, i) => i !== index);
+      return { ...prev, media: updated };
+    });
+  };
+
+  const handleMoveMediaItem = (index: number, direction: 'up' | 'down') => {
+    setEditingAnimal((prev) => {
+      if (!prev || !prev.media) return prev;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.media.length) return prev;
+
+      const updated = [...prev.media];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return { ...prev, media: updated };
+    });
   };
 
   // Ledger Handlers
@@ -163,23 +263,49 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleOpenAddLedger = () => {
+    setEditingLedgerEntry({
+      donor_name: '',
+      amount: '',
+      entry_type: 'donation',
+      payment_method: 'UPI',
+      is_verified: true,
+      transaction_date: new Date().toISOString().slice(0, 10),
+      notes: '',
+    });
+    setIsLedgerModalOpen(true);
+  };
+
+  const handleOpenEditLedger = (entry: LedgerEntry) => {
+    setEditingLedgerEntry({
+      id: entry.id,
+      donor_name: entry.donor_name,
+      amount: entry.amount,
+      entry_type: entry.entry_type,
+      payment_method: entry.payment_method,
+      reference_id: entry.reference_id,
+      receipt_url: entry.receipt_url,
+      is_verified: entry.is_verified,
+      transaction_date: entry.transaction_date?.slice(0, 10),
+      notes: entry.notes,
+      animal_id: entry.animal_id,
+    });
+    setIsLedgerModalOpen(true);
+  };
+
   const handleSaveLedgerEntry = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newLedgerEntry.amount) return alert('Amount is required');
+    if (!editingLedgerEntry.amount) return alert('Amount is required');
     try {
-      await ledgerApi.create(newLedgerEntry);
+      if (editingLedgerEntry.id) {
+        await ledgerApi.update(editingLedgerEntry.id, editingLedgerEntry);
+      } else {
+        await ledgerApi.create(editingLedgerEntry);
+      }
       setIsLedgerModalOpen(false);
-      setNewLedgerEntry({
-        donor_name: '',
-        amount: '',
-        entry_type: 'donation',
-        payment_method: 'UPI',
-        is_verified: true,
-        transaction_date: new Date().toISOString().slice(0, 10),
-      });
       loadAllData();
     } catch (err: any) {
-      alert(err.message || 'Failed to add ledger entry');
+      alert(err.message || 'Failed to save ledger entry');
     }
   };
 
@@ -187,13 +313,15 @@ export const AdminDashboard: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadProgressText('Uploading receipt proof...');
     try {
       const res = await uploadApi.uploadSingle(file, 'receipts');
-      setNewLedgerEntry((prev) => ({ ...prev, receipt_url: res.file.url }));
+      setEditingLedgerEntry((prev) => ({ ...prev, receipt_url: res.file.url }));
     } catch (err: any) {
       alert(err.message || 'Receipt upload failed');
     } finally {
       setUploading(false);
+      setUploadProgressText('');
     }
   };
 
@@ -208,8 +336,19 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Filter ledger entries
+  const filteredLedgerEntries = ledgerEntries.filter((item) => {
+    if (ledgerFilter === 'all') return true;
+    if (ledgerFilter === 'pending') return !item.is_verified;
+    if (ledgerFilter === 'verified') return item.is_verified && item.entry_type === 'donation';
+    if (ledgerFilter === 'expense') return item.entry_type === 'expense';
+    return true;
+  });
+
+  const pendingDonations = ledgerEntries.filter((l) => !l.is_verified && l.entry_type === 'donation');
+
   if (authLoading) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading admin portal...</div>;
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white font-mono">Loading admin portal...</div>;
   }
 
   return (
@@ -217,11 +356,11 @@ export const AdminDashboard: React.FC = () => {
       {/* Top Bar */}
       <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-black">
-            P
+          <div className="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center font-black">
+            🐾
           </div>
           <div>
-            <h1 className="text-base font-bold text-white leading-tight">Paws&Hearts Manager</h1>
+            <h1 className="text-base font-bold text-white leading-tight font-display">Paws&Hearts Manager</h1>
             <p className="text-xs text-slate-400">Signed in as {user?.name || user?.email}</p>
           </div>
         </div>
@@ -230,7 +369,7 @@ export const AdminDashboard: React.FC = () => {
           <Link
             to="/"
             target="_blank"
-            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-colors font-display"
           >
             <ExternalLink className="w-3.5 h-3.5" /> View Live Site
           </Link>
@@ -248,154 +387,115 @@ export const AdminDashboard: React.FC = () => {
       </header>
 
       {/* Main Container */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
-          {[
-            { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-            { id: 'animals', label: `Rescues & Animals (${animals.length})`, icon: Dog },
-            { id: 'ledger', label: `Public Ledger (${ledgerEntries.length})`, icon: Receipt },
-            { id: 'settings', label: 'Site Settings', icon: Settings },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
-                  isActive
-                    ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
-                    : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all font-display ${
+              activeTab === 'overview'
+                ? 'bg-pink-600 text-white shadow-md'
+                : 'bg-slate-900 text-slate-400 hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" /> Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('animals')}
+            className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all font-display ${
+              activeTab === 'animals'
+                ? 'bg-pink-600 text-white shadow-md'
+                : 'bg-slate-900 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Dog className="w-4 h-4" /> Rescue Animals ({animals.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('ledger')}
+            className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all font-display relative ${
+              activeTab === 'ledger'
+                ? 'bg-pink-600 text-white shadow-md'
+                : 'bg-slate-900 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Receipt className="w-4 h-4" />
+            <span>Transparency Ledger</span>
+            {pendingDonations.length > 0 && (
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 animate-pulse">
+                {pendingDonations.length} Pending
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all font-display ${
+              activeTab === 'settings'
+                ? 'bg-pink-600 text-white shadow-md'
+                : 'bg-slate-900 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Settings className="w-4 h-4" /> Site Settings
+          </button>
         </div>
 
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Total Verified Raised
-                </span>
-                <div className="text-3xl font-black text-emerald-400 mt-1">
-                  ₹{Number(stats?.total_raised || 0).toLocaleString('en-IN')}
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <span className="text-xs text-slate-400 font-bold uppercase">Total Verified Funds</span>
+                <div className="text-2xl font-black text-emerald-400 mt-1 font-display">
+                  ₹{(stats?.total_raised || 0).toLocaleString('en-IN')}
                 </div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Medical Expenses Paid
-                </span>
-                <div className="text-3xl font-black text-rose-400 mt-1">
-                  ₹{Number(stats?.total_expenses || 0).toLocaleString('en-IN')}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <span className="text-xs text-slate-400 font-bold uppercase">Vet Clinic Expenses</span>
+                <div className="text-2xl font-black text-rose-400 mt-1 font-display">
+                  ₹{(stats?.total_expenses || 0).toLocaleString('en-IN')}
                 </div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Active Medical Rescues
-                </span>
-                <div className="text-3xl font-black text-amber-400 mt-1">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <span className="text-xs text-slate-400 font-bold uppercase">Critical Treatments</span>
+                <div className="text-2xl font-black text-amber-400 mt-1 font-display">
                   {stats?.active_treatments || 0}
                 </div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Dogs Rehomed (Adopted)
-                </span>
-                <div className="text-3xl font-black text-indigo-400 mt-1">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <span className="text-xs text-slate-400 font-bold uppercase">Adopted / Rehomed</span>
+                <div className="text-2xl font-black text-pink-400 mt-1 font-display">
                   {stats?.animals_adopted || 0}
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Quick Rescue Shortcuts */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-white">Recent Urgent Rescues</h3>
-                  <button
-                    onClick={() => setActiveTab('animals')}
-                    className="text-xs text-brand-400 font-bold hover:underline"
-                  >
-                    View All &rarr;
-                  </button>
+            {/* Pending Verifications Banner */}
+            {pendingDonations.length > 0 && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5 animate-spin" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-sm font-display">
+                      {pendingDonations.length} Pending Donor Payment Pledges Awaiting Verification
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Review incoming UPI app transfers, check UTR/screenshots, and approve them to credit the target dog.
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {animals.slice(0, 4).map((a) => (
-                    <div
-                      key={a.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-800"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={a.hero_image || '/herosection.jpg'}
-                          alt={a.name}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                        <div>
-                          <div className="font-bold text-white text-sm">{a.name}</div>
-                          <div className="text-xs text-slate-400 capitalize">
-                            {a.category} • {a.status.replace('_', ' ')}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs font-bold text-brand-400">
-                        ₹{Number(a.funds_raised || 0).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <button
+                  onClick={() => {
+                    setActiveTab('ledger');
+                    setLedgerFilter('pending');
+                  }}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl font-display transition-all"
+                >
+                  Review Pending Now →
+                </button>
               </div>
-
-              {/* Pending Ledger Actions */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-white">Pending Verification Ledger</h3>
-                  <button
-                    onClick={() => setActiveTab('ledger')}
-                    className="text-xs text-brand-400 font-bold hover:underline"
-                  >
-                    Manage Ledger &rarr;
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {ledgerEntries.filter((l) => !l.is_verified).length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-400 italic">
-                      All donations are verified! No pending receipts.
-                    </div>
-                  ) : (
-                    ledgerEntries
-                      .filter((l) => !l.is_verified)
-                      .slice(0, 4)
-                      .map((l) => (
-                        <div
-                          key={l.id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-800"
-                        >
-                          <div>
-                            <div className="font-bold text-white text-sm">{l.donor_name}</div>
-                            <div className="text-xs text-amber-400">
-                              ₹{Number(l.amount).toLocaleString('en-IN')} • {l.notes || 'Donation'}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleToggleVerify(l.id)}
-                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-colors"
-                          >
-                            Verify
-                          </button>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -404,16 +504,16 @@ export const AdminDashboard: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-white">Rescue Animals & Medical Cases</h2>
+                <h2 className="text-lg font-bold text-white font-display">Rescue Animals & Medical Cases</h2>
                 <p className="text-xs text-slate-400">
-                  Add, update stories, medical reports, and photo/video records.
+                  Manage rescue cases (Tintin, etc.), upload bulk photos, surgery X-rays, medical records, and rehab videos.
                 </p>
               </div>
               <button
                 onClick={handleOpenAddAnimal}
-                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-brand-500/20 transition-all"
+                className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-pink-600/20 transition-all font-display"
               >
-                <Plus className="w-4 h-4" /> Add New Rescue
+                <Plus className="w-4 h-4" /> Add New Rescue Case
               </button>
             </div>
 
@@ -425,26 +525,31 @@ export const AdminDashboard: React.FC = () => {
                 >
                   <div className="relative aspect-[16/9] w-full bg-slate-800">
                     <img
-                      src={a.hero_image || '/herosection.jpg'}
+                      src={a.hero_image || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'}
                       alt={a.name}
                       className="w-full h-full object-cover"
                     />
                     <span className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-white">
                       {a.status.replace('_', ' ').toUpperCase()}
                     </span>
+                    {a.media && a.media.length > 0 && (
+                      <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-pink-300">
+                        📁 {a.media.length} Gallery Records
+                      </span>
+                    )}
                   </div>
 
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-base text-white">{a.name}</h3>
+                      <h3 className="font-bold text-base text-white font-display">{a.name}</h3>
                       <p className="text-xs text-slate-400 line-clamp-2 mt-1">
                         {a.short_desc || a.full_story || 'No description.'}
                       </p>
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                      <span className="text-xs font-bold text-brand-400">
-                        {a.category.toUpperCase()}
+                      <span className="text-xs font-bold text-pink-400 font-display">
+                        {a.category.toUpperCase()} • ₹{Number(a.funds_raised || 0).toLocaleString('en-IN')} / ₹{Number(a.funds_needed || 0).toLocaleString('en-IN')}
                       </span>
                       <div className="flex gap-2">
                         <button
@@ -476,21 +581,67 @@ export const AdminDashboard: React.FC = () => {
         {/* TAB 3: LEDGER MANAGER */}
         {activeTab === 'ledger' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-white">Financial Transparency Ledger</h2>
+                <h2 className="text-lg font-bold text-white font-display">Financial Transparency Ledger</h2>
                 <p className="text-xs text-slate-400">
-                  Track incoming UPI donations, clinic medical bills, and verify donor submissions.
+                  Approve donor pledges, edit records, or log custom clinic bills and cash donations.
                 </p>
               </div>
               <button
-                onClick={() => setIsLedgerModalOpen(true)}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-all"
+                onClick={handleOpenAddLedger}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-all font-display self-start"
               >
-                <Plus className="w-4 h-4" /> Add Transaction / Expense
+                <Plus className="w-4 h-4" /> Add Custom Transaction
               </button>
             </div>
 
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <button
+                onClick={() => setLedgerFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  ledgerFilter === 'all'
+                    ? 'bg-slate-800 text-white border border-slate-700'
+                    : 'bg-slate-900/60 text-slate-400 hover:text-white'
+                }`}
+              >
+                All Entries ({ledgerEntries.length})
+              </button>
+              <button
+                onClick={() => setLedgerFilter('pending')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  ledgerFilter === 'pending'
+                    ? 'bg-amber-500 text-slate-950 font-black'
+                    : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Pending Approval ({pendingDonations.length})</span>
+              </button>
+              <button
+                onClick={() => setLedgerFilter('verified')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  ledgerFilter === 'verified'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-900/60 text-slate-400 hover:text-white'
+                }`}
+              >
+                Verified Donations
+              </button>
+              <button
+                onClick={() => setLedgerFilter('expense')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  ledgerFilter === 'expense'
+                    ? 'bg-rose-600 text-white'
+                    : 'bg-slate-900/60 text-slate-400 hover:text-white'
+                }`}
+              >
+                Clinic Expenses
+              </button>
+            </div>
+
+            {/* Ledger Table */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-slate-300">
@@ -498,64 +649,109 @@ export const AdminDashboard: React.FC = () => {
                     <tr>
                       <th className="p-4">Date</th>
                       <th className="p-4">Donor / Recipient</th>
-                      <th className="p-4">Type</th>
-                      <th className="p-4">Dog / Note</th>
+                      <th className="p-4">App / Method</th>
+                      <th className="p-4">Dog / Purpose</th>
                       <th className="p-4 text-right">Amount</th>
                       <th className="p-4 text-center">Status</th>
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
-                    {ledgerEntries.map((row) => (
-                      <tr key={row.id} className="hover:bg-slate-800/50">
-                        <td className="p-4 whitespace-nowrap">
-                          {new Date(row.transaction_date).toLocaleDateString()}
-                        </td>
-                        <td className="p-4 font-bold text-white">{row.donor_name}</td>
-                        <td className="p-4 uppercase text-[10px] font-bold text-slate-400">
-                          {row.entry_type}
-                        </td>
-                        <td className="p-4 text-slate-400">
-                          {row.animal_name ? `For ${row.animal_name}` : row.notes || '-'}
-                        </td>
-                        <td
-                          className={`p-4 text-right font-black ${
-                            row.entry_type === 'expense' ? 'text-rose-400' : 'text-emerald-400'
-                          }`}
-                        >
-                          ₹{Number(row.amount).toLocaleString('en-IN')}
-                        </td>
-                        <td className="p-4 text-center">
-                          <button
-                            onClick={() => handleToggleVerify(row.id)}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
-                              row.is_verified
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                            }`}
-                          >
-                            {row.is_verified ? (
-                              <>
-                                <CheckCircle2 className="w-3 h-3" /> Verified
-                              </>
-                            ) : (
-                              <>
-                                <Clock className="w-3 h-3" /> Pending
-                              </>
-                            )}
-                          </button>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button
-                            onClick={() => handleDeleteLedger(row.id)}
-                            className="p-1 rounded-lg text-rose-400 hover:bg-rose-500/10"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                    {filteredLedgerEntries.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-slate-500 font-semibold">
+                          No transactions found in this view.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredLedgerEntries.map((row) => (
+                        <tr
+                          key={row.id}
+                          className={`hover:bg-slate-800/50 transition-colors ${
+                            !row.is_verified ? 'bg-amber-500/5' : ''
+                          }`}
+                        >
+                          <td className="p-4 whitespace-nowrap">
+                            {new Date(row.transaction_date).toLocaleDateString()}
+                          </td>
+                          <td className="p-4 font-bold text-white">
+                            <div>{row.donor_name}</div>
+                            {row.reference_id && (
+                              <div className="text-[10px] text-slate-400 font-mono">
+                                Ref: {row.reference_id}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-medium text-[10px]">
+                              {row.payment_method || 'UPI'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-300">
+                            {row.animal_name ? (
+                              <span className="font-bold text-pink-400">For {row.animal_name}</span>
+                            ) : null}
+                            {row.notes && <div className="text-slate-400 text-[11px] truncate max-w-xs">{row.notes}</div>}
+                          </td>
+                          <td
+                            className={`p-4 text-right font-black font-display text-sm ${
+                              row.entry_type === 'expense' ? 'text-rose-400' : 'text-emerald-400'
+                            }`}
+                          >
+                            ₹{Number(row.amount).toLocaleString('en-IN')}
+                          </td>
+                          <td className="p-4 text-center">
+                            <button
+                              onClick={() => handleToggleVerify(row.id)}
+                              className={`px-3 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1 transition-all ${
+                                row.is_verified
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
+                                  : 'bg-amber-400 text-slate-950 font-black shadow-md hover:bg-amber-300'
+                              }`}
+                            >
+                              {row.is_verified ? (
+                                <>
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Verified
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="w-3.5 h-3.5" /> Approve Pledge
+                                </>
+                              )}
+                            </button>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {row.receipt_url && (
+                                <a
+                                  href={row.receipt_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                                  title="View Receipt / Screenshot"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </a>
+                              )}
+                              <button
+                                onClick={() => handleOpenEditLedger(row)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                                title="Edit Entry"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteLedger(row.id)}
+                                className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/10"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -566,7 +762,7 @@ export const AdminDashboard: React.FC = () => {
         {/* TAB 4: SETTINGS */}
         {activeTab === 'settings' && (
           <div className="max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-white mb-4">Site & Contact Settings</h2>
+            <h2 className="text-lg font-bold text-white mb-4 font-display">Site & Contact Settings</h2>
             <form onSubmit={handleSaveSettings} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
@@ -606,20 +802,32 @@ export const AdminDashboard: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                  Emergency Alert Banner (Appears at top of page)
+                  Location / City
+                </label>
+                <input
+                  type="text"
+                  value={siteSettings.contact_location}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, contact_location: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Emergency Broadcast Banner (Optional)
                 </label>
                 <input
                   type="text"
                   value={siteSettings.emergency_banner || ''}
                   onChange={(e) => setSiteSettings({ ...siteSettings, emergency_banner: e.target.value })}
-                  placeholder="e.g. 🚨 Urgent surgery needed for Bruno tonight"
+                  placeholder="e.g. Critical Surgery Fund for Tintin Ongoing Now!"
                   className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
                 />
               </div>
 
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg transition-all"
+                className="px-6 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg transition-all font-display"
               >
                 <Save className="w-4 h-4" /> Save Settings
               </button>
@@ -628,19 +836,26 @@ export const AdminDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* ANIMAL ADD / EDIT MODAL */}
+      {/* ANIMAL ADD / EDIT MODAL (WITH MULTI-FILE UPLOAD & CATEGORIZATION) */}
       {isAnimalModalOpen && editingAnimal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 text-slate-100 my-8">
+          <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl p-6 text-slate-100 my-8 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsAnimalModalOpen(false)}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-xl font-bold text-white mb-4">
-              {editingAnimal.id ? `Edit ${editingAnimal.name}` : 'Add New Rescue Animal'}
+            <h3 className="text-xl font-bold text-white mb-4 font-display">
+              {editingAnimal.id ? `Edit ${editingAnimal.name}` : 'Add New Rescue Case'}
             </h3>
+
+            {uploading && (
+              <div className="p-3 bg-pink-600/20 border border-pink-500/40 rounded-xl text-xs text-pink-300 font-bold mb-4 flex items-center gap-2 animate-pulse">
+                <UploadCloud className="w-4 h-4 animate-bounce" />
+                {uploadProgressText || 'Uploading to Cloudinary...'}
+              </div>
+            )}
 
             <form onSubmit={handleSaveAnimal} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -661,8 +876,8 @@ export const AdminDashboard: React.FC = () => {
                     onChange={(e) => setEditingAnimal({ ...editingAnimal, category: e.target.value as any })}
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                   >
-                    <option value="adoption">Adoption</option>
-                    <option value="treatment">Medical Treatment</option>
+                    <option value="treatment">Emergency Medical Treatment</option>
+                    <option value="adoption">Adoption Case</option>
                   </select>
                 </div>
               </div>
@@ -675,9 +890,9 @@ export const AdminDashboard: React.FC = () => {
                     onChange={(e) => setEditingAnimal({ ...editingAnimal, status: e.target.value as any })}
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                   >
-                    <option value="available">Available</option>
                     <option value="urgent">Urgent</option>
                     <option value="in_treatment">In Treatment</option>
+                    <option value="available">Available for Adoption</option>
                     <option value="recovered">Recovered (Success Story)</option>
                     <option value="adopted">Adopted (Success Story)</option>
                   </select>
@@ -693,30 +908,137 @@ export const AdminDashboard: React.FC = () => {
                         tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
                       })
                     }
-                    placeholder="Vaccinated, Friendly, Indie"
+                    placeholder="Orthopedic Surgery, Pelvic Fracture, Bengaluru Indie"
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                   />
                 </div>
               </div>
 
-              {/* Photo Upload to R2 / Local */}
+              {/* Primary Cover Image */}
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1">
-                  Primary Photo (Cloudflare R2 / Disk)
+                  Primary Profile Hero Image
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={editingAnimal.hero_image || ''}
                     onChange={(e) => setEditingAnimal({ ...editingAnimal, hero_image: e.target.value })}
-                    placeholder="Image URL or upload below"
+                    placeholder="Image URL or upload"
                     className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white"
                   />
-                  <label className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1.5 text-brand-400">
+                  <label className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1.5 text-pink-400">
                     <UploadCloud className="w-4 h-4" />
-                    {uploading ? 'Uploading...' : 'Upload File'}
-                    <input type="file" accept="image/*,video/*" onChange={handleHeroImageUpload} className="hidden" />
+                    Cover Photo
+                    <input type="file" accept="image/*" onChange={handleHeroImageUpload} className="hidden" />
                   </label>
+                </div>
+              </div>
+
+              {/* MULTI-FILE UPLOAD SECTION (X-RAYS, MEDICAL RECORDS, BILLS, VIDEOS, PHOTOS) */}
+              <div className="p-4 bg-slate-800/60 border border-slate-700 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase text-white flex items-center gap-1.5 font-display">
+                      <Activity className="w-4 h-4 text-pink-400" />
+                      Medical Records, X-Rays, Bills & Videos ({editingAnimal.media?.length || 0})
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      Upload multiple files at once or one by one. Categorize each record for full transparency.
+                    </p>
+                  </div>
+
+                  {/* Multi-File Upload Button */}
+                  <label className="px-3.5 py-1.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-md transition-all font-display">
+                    <UploadCloud className="w-4 h-4" />
+                    Upload Multiple Files
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*,video/*,application/pdf"
+                      onChange={handleBulkMediaUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Media Item List */}
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {(!editingAnimal.media || editingAnimal.media.length === 0) ? (
+                    <div className="text-center py-6 text-slate-500 text-xs border border-dashed border-slate-700 rounded-xl">
+                      No additional files uploaded yet. Click "Upload Multiple Files" above to add X-rays, clinic bills, or recovery videos.
+                    </div>
+                  ) : (
+                    editingAnimal.media.map((item, idx) => (
+                      <div
+                        key={item.id || idx}
+                        className="bg-slate-900 border border-slate-700 rounded-xl p-2.5 flex items-center gap-2.5 text-xs"
+                      >
+                        {/* Thumbnail */}
+                        <div className="w-12 h-12 bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                          {item.media_type === 'video' ? (
+                            <Video className="w-6 h-6 text-pink-400" />
+                          ) : (
+                            <img src={item.url} alt="Media" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+
+                        {/* Category Dropdown */}
+                        <select
+                          value={item.media_type}
+                          onChange={(e) =>
+                            handleUpdateMediaItem(idx, { media_type: e.target.value as MediaType })
+                          }
+                          className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs font-bold"
+                        >
+                          <option value="photo">📸 Photo</option>
+                          <option value="xray">🩻 X-Ray Scan</option>
+                          <option value="prescription">📋 Doctor Report</option>
+                          <option value="bill">🧾 Clinic Bill</option>
+                          <option value="video">🎥 Recovery Video</option>
+                        </select>
+
+                        {/* Caption Input */}
+                        <input
+                          type="text"
+                          value={item.caption || ''}
+                          onChange={(e) => handleUpdateMediaItem(idx, { caption: e.target.value })}
+                          placeholder="Caption (e.g. Pre-op X-ray)"
+                          className="flex-1 px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"
+                        />
+
+                        {/* Order Controls */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveMediaItem(idx, 'up')}
+                            disabled={idx === 0}
+                            className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-20"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveMediaItem(idx, 'down')}
+                            disabled={idx === (editingAnimal.media?.length || 0) - 1}
+                            className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-20"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMediaItem(idx)}
+                            className="p-1 rounded text-rose-400 hover:bg-rose-500/20"
+                            title="Delete File"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -742,12 +1064,12 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Medical Treatment Notes</label>
+                <label className="block text-xs font-bold text-slate-400 mb-1">Veterinary Medical Details</label>
                 <textarea
                   rows={2}
                   value={editingAnimal.medical_details || ''}
                   onChange={(e) => setEditingAnimal({ ...editingAnimal, medical_details: e.target.value })}
-                  placeholder="Prescriptions, surgeries, clinic name..."
+                  placeholder="Diagnosis, surgery plan, clinic name, vet prescriptions..."
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                 />
               </div>
@@ -787,9 +1109,9 @@ export const AdminDashboard: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl"
+                  className="px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl font-display shadow-md"
                 >
-                  Save Profile
+                  Save Profile & Records
                 </button>
               </div>
             </form>
@@ -797,7 +1119,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* LEDGER ADD MODAL */}
+      {/* LEDGER ADD / EDIT MODAL */}
       {isLedgerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 text-slate-100">
@@ -807,50 +1129,83 @@ export const AdminDashboard: React.FC = () => {
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-xl font-bold text-white mb-4">Add Ledger Transaction</h3>
+            <h3 className="text-xl font-bold text-white mb-4 font-display">
+              {editingLedgerEntry.id ? 'Edit Ledger Entry' : 'Add Custom Ledger Transaction'}
+            </h3>
 
             <form onSubmit={handleSaveLedgerEntry} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1">Entry Type</label>
                 <select
-                  value={newLedgerEntry.entry_type}
+                  value={editingLedgerEntry.entry_type}
                   onChange={(e) =>
-                    setNewLedgerEntry({ ...newLedgerEntry, entry_type: e.target.value as any })
+                    setEditingLedgerEntry({ ...editingLedgerEntry, entry_type: e.target.value as any })
                   }
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                 >
-                  <option value="donation">Donation (Incoming)</option>
+                  <option value="donation">Donation (Incoming Funds)</option>
                   <option value="expense">Medical / Food Expense (Outgoing)</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1">
-                  Donor / Clinic Name
+                  Donor / Clinic / Recipient Name
                 </label>
                 <input
                   type="text"
                   required
-                  value={newLedgerEntry.donor_name}
+                  value={editingLedgerEntry.donor_name}
                   onChange={(e) =>
-                    setNewLedgerEntry({ ...newLedgerEntry, donor_name: e.target.value })
+                    setEditingLedgerEntry({ ...editingLedgerEntry, donor_name: e.target.value })
                   }
-                  placeholder="e.g. Ananya Deshmukh or Crown Vet Clinic"
+                  placeholder="e.g. Ananya Deshmukh or Cessna Lifeline Vet Clinic"
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">Amount (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={editingLedgerEntry.amount}
+                    onChange={(e) =>
+                      setEditingLedgerEntry({ ...editingLedgerEntry, amount: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={editingLedgerEntry.transaction_date || new Date().toISOString().slice(0, 10)}
+                    onChange={(e) =>
+                      setEditingLedgerEntry({ ...editingLedgerEntry, transaction_date: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Amount (₹)</label>
-                <input
-                  type="number"
-                  required
-                  value={newLedgerEntry.amount}
+                <label className="block text-xs font-bold text-slate-400 mb-1">
+                  Payment Method
+                </label>
+                <select
+                  value={editingLedgerEntry.payment_method || 'UPI'}
                   onChange={(e) =>
-                    setNewLedgerEntry({ ...newLedgerEntry, amount: Number(e.target.value) })
+                    setEditingLedgerEntry({ ...editingLedgerEntry, payment_method: e.target.value })
                   }
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
-                />
+                >
+                  <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+                  <option value="Bank IMPS">Bank IMPS / NEFT</option>
+                  <option value="Cash">Cash / Offline</option>
+                  <option value="Card">Card</option>
+                </select>
               </div>
 
               <div>
@@ -858,13 +1213,13 @@ export const AdminDashboard: React.FC = () => {
                   Associated Rescue Dog (Optional)
                 </label>
                 <select
-                  value={newLedgerEntry.animal_id || ''}
+                  value={editingLedgerEntry.animal_id || ''}
                   onChange={(e) =>
-                    setNewLedgerEntry({ ...newLedgerEntry, animal_id: e.target.value || undefined })
+                    setEditingLedgerEntry({ ...editingLedgerEntry, animal_id: e.target.value || undefined })
                   }
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                 >
-                  <option value="">General Fund (Not linked)</option>
+                  <option value="">General Fund (Not linked to single dog)</option>
                   {animals.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name} ({a.category})
@@ -874,18 +1229,33 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-slate-400 mb-1">
+                  Reference / UTR / Bill Number
+                </label>
+                <input
+                  type="text"
+                  value={editingLedgerEntry.reference_id || ''}
+                  onChange={(e) =>
+                    setEditingLedgerEntry({ ...editingLedgerEntry, reference_id: e.target.value })
+                  }
+                  placeholder="e.g. UTR #4128910238 or Bill #INV-204"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1">Bill / Receipt Proof</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={newLedgerEntry.receipt_url || ''}
+                    value={editingLedgerEntry.receipt_url || ''}
                     onChange={(e) =>
-                      setNewLedgerEntry({ ...newLedgerEntry, receipt_url: e.target.value })
+                      setEditingLedgerEntry({ ...editingLedgerEntry, receipt_url: e.target.value })
                     }
                     placeholder="Receipt URL or upload"
                     className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white"
                   />
-                  <label className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer text-brand-400 flex items-center gap-1">
+                  <label className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold cursor-pointer text-pink-400 flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5" />
                     Upload
                     <input type="file" accept="image/*,application/pdf" onChange={handleReceiptUpload} className="hidden" />
@@ -893,18 +1263,31 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-1">Notes / Purpose</label>
+                <textarea
+                  rows={2}
+                  value={editingLedgerEntry.notes || ''}
+                  onChange={(e) =>
+                    setEditingLedgerEntry({ ...editingLedgerEntry, notes: e.target.value })
+                  }
+                  placeholder="Medical surgery cost, blood test panel, or donor message"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
+                />
+              </div>
+
               <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
                   id="verifyCheck"
-                  checked={Boolean(newLedgerEntry.is_verified)}
+                  checked={Boolean(editingLedgerEntry.is_verified)}
                   onChange={(e) =>
-                    setNewLedgerEntry({ ...newLedgerEntry, is_verified: e.target.checked })
+                    setEditingLedgerEntry({ ...editingLedgerEntry, is_verified: e.target.checked })
                   }
-                  className="w-4 h-4 accent-brand-500 rounded"
+                  className="w-4 h-4 accent-pink-500 rounded"
                 />
                 <label htmlFor="verifyCheck" className="text-xs font-bold text-slate-300">
-                  Mark as Verified immediately
+                  Mark as Verified immediately (credits target dog's funds)
                 </label>
               </div>
 
@@ -918,9 +1301,9 @@ export const AdminDashboard: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl"
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl font-display"
                 >
-                  Add Transaction
+                  Save Entry
                 </button>
               </div>
             </form>

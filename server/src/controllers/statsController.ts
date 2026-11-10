@@ -1,9 +1,21 @@
 import { Request, Response } from 'express';
 import { query } from '../config/db';
+import { apiCache, cacheKeys, invalidateCache } from '../utils/cache';
 
 export const getStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const shouldIncrement = req.query.visit === 'true';
+
+    // If not incrementing page views, check cache first
+    if (!shouldIncrement) {
+      const cached = apiCache.get(cacheKeys.stats);
+      if (cached) {
+        res.setHeader('X-Cache', 'HIT');
+        res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+        res.json(cached);
+        return;
+      }
+    }
 
     // Page view counter
     let views = 1250;
@@ -47,7 +59,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     const counts = countsRes.rows[0] || {};
     const funds = fundsRes.rows[0] || {};
 
-    res.json({
+    const payload = {
       stats: {
         page_views: views,
         total_raised: Number(funds.total_raised || 0),
@@ -57,7 +69,12 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
         animals_recovered: Number(counts.animals_recovered || 0),
         total_rescued: Number(counts.total_rescued || 0),
       },
-    });
+    };
+
+    apiCache.set(cacheKeys.stats, payload, 30);
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+    res.json(payload);
   } catch (err: any) {
     console.error('getStats error:', err);
     res.status(500).json({ error: 'Failed to retrieve stats' });
@@ -103,6 +120,8 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
         [key, JSON.stringify(value)]
       );
     }
+
+    invalidateCache.stats();
 
     res.json({ message: 'Settings updated successfully' });
   } catch (err: any) {

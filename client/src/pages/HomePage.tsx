@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { PetCard } from '../components/PetCard';
@@ -13,6 +14,9 @@ import { animalsApi, statsApi } from '../api/client';
 import { Heart, Activity } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
+  const { slug } = useParams<{ slug?: string }>();
+  const location = useLocation();
+
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
@@ -28,22 +32,34 @@ export const HomePage: React.FC = () => {
       statsApi.getSettings(),
     ])
       .then(([animalsRes, statsRes, settingsRes]) => {
-        setAnimals(animalsRes.animals);
+        const fetchedAnimals = animalsRes.animals;
+        setAnimals(fetchedAnimals);
         setStats(statsRes.stats);
         setSettings(settingsRes.settings);
+
+        // Check deep linked pet from route /pet/:slug or query ?pet=... or ?animal=...
+        const params = new URLSearchParams(window.location.search);
+        const targetSlug = slug || params.get('pet') || params.get('animal');
+        if (targetSlug) {
+          const match = fetchedAnimals.find(
+            (a) =>
+              a.slug.toLowerCase() === targetSlug.toLowerCase() ||
+              a.name.toLowerCase() === targetSlug.toLowerCase() ||
+              a.id === targetSlug
+          );
+          if (match) {
+            setSelectedAnimal(match);
+            if (params.get('donate') === 'true') {
+              setActiveAnimalForDonation(match.name);
+            }
+          }
+        }
       })
       .catch((err) => {
         console.error('Initial load failed:', err);
       })
       .finally(() => setLoading(false));
-
-    // Handle deep linked ?animal= query
-    const params = new URLSearchParams(window.location.search);
-    const animalQuery = params.get('animal');
-    if (animalQuery) {
-      setActiveAnimalForDonation(decodeURIComponent(animalQuery));
-    }
-  }, []);
+  }, [slug, location.search]);
 
   const handleDonateForAnimal = (animalName: string) => {
     setActiveAnimalForDonation(animalName);
@@ -97,7 +113,12 @@ export const HomePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {treatmentAnimals.map((animal) => (
-              <PetCard key={animal.id} animal={animal} onSelect={setSelectedAnimal} />
+              <PetCard
+                key={animal.id}
+                animal={animal}
+                onSelect={setSelectedAnimal}
+                onDonate={handleDonateForAnimal}
+              />
             ))}
           </div>
         )}
@@ -129,7 +150,12 @@ export const HomePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {adoptionAnimals.map((animal) => (
-              <PetCard key={animal.id} animal={animal} onSelect={setSelectedAnimal} />
+              <PetCard
+                key={animal.id}
+                animal={animal}
+                onSelect={setSelectedAnimal}
+                onDonate={handleDonateForAnimal}
+              />
             ))}
           </div>
         )}
@@ -144,9 +170,11 @@ export const HomePage: React.FC = () => {
 
       {/* 4. Donation Section */}
       <DonationSection
-        settings={settings}
+        upiId={settings?.upi_id}
+        payeeName={settings?.payee_name}
         activeAnimalName={activeAnimalForDonation}
-        onClearAnimalContext={() => setActiveAnimalForDonation(null)}
+        onClearActiveAnimal={() => setActiveAnimalForDonation(null)}
+        animals={animals}
       />
 
       {/* 5. Live Transparency Ledger */}

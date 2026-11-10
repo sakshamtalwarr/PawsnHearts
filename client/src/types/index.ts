@@ -1,9 +1,11 @@
+export type MediaType = 'image' | 'video' | 'xray' | 'prescription' | 'bill' | 'photo';
+
 export interface AnimalMedia {
-  id: string;
-  media_type: 'image' | 'video';
+  id?: string;
+  media_type: MediaType;
   url: string;
   caption?: string;
-  sort_order: number;
+  sort_order?: number;
 }
 
 export interface Animal {

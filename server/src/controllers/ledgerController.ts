@@ -1,9 +1,21 @@
 import { Request, Response } from 'express';
 import { query } from '../config/db';
+import { apiCache, cacheKeys, invalidateCache } from '../utils/cache';
 
 export const getPublicLedger = async (req: Request, res: Response): Promise<void> => {
   try {
     const { search, limit = 50, offset = 0 } = req.query;
+    const cacheKey = cacheKeys.publicLedger(`${search || ''}_${limit}_${offset}`);
+
+    if (!search) {
+      const cached = apiCache.get(cacheKey);
+      if (cached) {
+        res.setHeader('X-Cache', 'HIT');
+        res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+        res.json(cached);
+        return;
+      }
+    }
 
     let sql = `
       SELECT 
@@ -51,10 +63,18 @@ export const getPublicLedger = async (req: Request, res: Response): Promise<void
       FROM ledger_entries
     `);
 
-    res.json({
+    const payload = {
       entries: result.rows,
       summary: totalsResult.rows[0],
-    });
+    };
+
+    if (!search) {
+      apiCache.set(cacheKey, payload, 45);
+    }
+
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+    res.json(payload);
   } catch (err: any) {
     console.error('getPublicLedger error:', err);
     res.status(500).json({ error: 'Failed to retrieve ledger entries' });
@@ -63,6 +83,7 @@ export const getPublicLedger = async (req: Request, res: Response): Promise<void
 
 export const createLedgerEntry = async (req: Request, res: Response): Promise<void> => {
   try {
+    const isAdmin = Boolean((req as any).user);
     const {
       animal_id,
       donor_name = 'Anonymous',
@@ -81,6 +102,10 @@ export const createLedgerEntry = async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    // Security: Non-admin public submissions are always unverified donations
+    const verifiedStatus = isAdmin ? Boolean(is_verified) : false;
+    const finalEntryType = isAdmin ? entry_type : 'donation';
+
     const sql = `
       INSERT INTO ledger_entries (
         animal_id, donor_name, amount, entry_type, payment_method,
@@ -93,17 +118,17 @@ export const createLedgerEntry = async (req: Request, res: Response): Promise<vo
       animal_id || null,
       donor_name.trim() || 'Anonymous',
       Number(amount),
-      entry_type,
+      finalEntryType,
       payment_method,
       reference_id || null,
       receipt_url || null,
-      Boolean(is_verified),
+      verifiedStatus,
       transaction_date,
       notes || null,
     ]);
 
     // If animal_id is provided and verified, update animal's funds_raised
-    if (animal_id && is_verified && entry_type === 'donation') {
+    if (animal_id && verifiedStatus && finalEntryType === 'donation') {
       await query(
         `UPDATE animals 
          SET funds_raised = funds_raised + $1 
@@ -112,8 +137,13 @@ export const createLedgerEntry = async (req: Request, res: Response): Promise<vo
       );
     }
 
+    // Invalidate ledger and stats caches
+    invalidateCache.ledger();
+
     res.status(201).json({
-      message: 'Ledger entry recorded successfully',
+      message: verifiedStatus
+        ? 'Ledger entry recorded and verified successfully'
+        : 'Thank you! Your donation has been pledged and sent to admin for verification.',
       entry: result.rows[0],
     });
   } catch (err: any) {
@@ -176,6 +206,9 @@ export const updateLedgerEntry = async (req: Request, res: Response): Promise<vo
       id,
     ]);
 
+    // Invalidate caches
+    invalidateCache.ledger();
+
     res.json({
       message: 'Ledger entry updated',
       entry: result.rows[0],
@@ -213,6 +246,9 @@ export const toggleVerification = async (req: Request, res: Response): Promise<v
       );
     }
 
+    // Invalidate caches
+    invalidateCache.ledger();
+
     res.json({
       message: `Entry status updated to ${newStatus ? 'Verified' : 'Pending'}`,
       entry: result.rows[0],
@@ -232,6 +268,9 @@ export const deleteLedgerEntry = async (req: Request, res: Response): Promise<vo
       res.status(404).json({ error: 'Entry not found' });
       return;
     }
+
+    // Invalidate caches
+    invalidateCache.ledger();
 
     res.json({ message: 'Ledger entry deleted successfully' });
   } catch (err: any) {

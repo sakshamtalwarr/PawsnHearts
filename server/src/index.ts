@@ -85,6 +85,91 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Social Share & Crawler Route: Serves dynamic OpenGraph meta tags for WhatsApp/Facebook/Twitter
+app.get(['/pet/:slug', '/animals/:slug', '/share/pet/:slug'], async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    const userAgent = req.get('user-agent') || '';
+    const isSocialBot = /facebookexternalhit|whatsapp|telegrambot|twitterbot|linkedinbot|discordbot|slackbot|applebot|pinterest|googlebot|bingbot/i.test(
+      userAgent
+    );
+
+    const result = await query(
+      `SELECT a.*, 
+        COALESCE((
+          SELECT SUM(amount) FROM ledger_entries 
+          WHERE animal_id = a.id AND entry_type = 'donation' AND is_verified = true
+        ), 0) as verified_donations
+       FROM animals a 
+       WHERE a.slug = $1 OR a.id::text = $1 LIMIT 1`,
+      [slug]
+    );
+
+    if (result.rows.length === 0) {
+      if (isSocialBot) {
+        res.status(404).send('Rescue case not found');
+        return;
+      }
+      res.redirect('/#treatment');
+      return;
+    }
+
+    const animal = result.rows[0];
+    const host = req.get('host') || 'pawsnhearts.org';
+    const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+    const baseUrl = `${protocol}://${host}`;
+    const pageUrl = `${baseUrl}/pet/${animal.slug}`;
+    const heroImg = animal.hero_image || `${baseUrl}/logo.png`;
+
+    const needed = Number(animal.funds_needed || 0);
+    const raised = Number(animal.funds_raised || 0);
+    const categoryText = animal.category === 'treatment' ? 'Emergency Medical Rescue' : 'Adoption Case';
+
+    const title = `🐾 Help ${animal.name} - ${categoryText} | Paws&Hearts Bengaluru`;
+    const description = `${animal.short_desc || animal.medical_details || animal.full_story?.slice(0, 200)} ${
+      needed > 0 ? `| Goal: ₹${needed.toLocaleString('en-IN')} (₹${raised.toLocaleString('en-IN')} raised)` : ''
+    }. 100% transparent street dog rescue in Bengaluru.`;
+
+    if (isSocialBot) {
+      // Return crawler-optimized HTML with OpenGraph tags
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${title}</title>
+  <meta name="description" content="${description}" />
+  <meta property="og:site_name" content="Paws&Hearts - Bengaluru Street Dog Rescue" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${heroImg}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="${pageUrl}" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${heroImg}" />
+</head>
+<body style="font-family: system-ui, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+  <h2>${title}</h2>
+  <img src="${heroImg}" alt="${animal.name}" style="max-width: 100%; border-radius: 12px; margin-bottom: 16px;" />
+  <p>${description}</p>
+  <p><a href="${pageUrl}">Visit full rescue profile on Paws&Hearts</a></p>
+</body>
+</html>`);
+      return;
+    }
+
+    // Normal browser visitor: Redirect to SPA with animal pre-selected
+    res.redirect(`/?pet=${encodeURIComponent(animal.slug)}`);
+  } catch (err) {
+    console.error('Social share error:', err);
+    next(err);
+  }
+});
+
 // Production: Serve React client build
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '../../client/dist');

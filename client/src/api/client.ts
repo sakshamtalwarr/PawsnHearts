@@ -14,8 +14,26 @@ export function clearToken() {
   localStorage.removeItem('paws_admin_token');
 }
 
+// Client-side in-memory cache for fast snappy UI navigation
+const clientCache = new Map<string, { data: any; expiry: number }>();
+
+export function clearClientCache() {
+  clientCache.clear();
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const method = (options.method || 'GET').toUpperCase();
   const token = getToken();
+
+  // Check cache for GET requests without Authorization header (or cache by token)
+  const cacheKey = `${method}:${endpoint}:${token ? 'auth' : 'anon'}`;
+  if (method === 'GET' && !endpoint.includes('visit=true')) {
+    const cached = clientCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiry) {
+      return cached.data as T;
+    }
+  }
+
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
@@ -39,6 +57,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
   }
 
+  // Cache successful GET responses for 20 seconds
+  if (method === 'GET' && !endpoint.includes('visit=true')) {
+    clientCache.set(cacheKey, { data, expiry: Date.now() + 20 * 1000 });
+  } else if (method !== 'GET') {
+    // Invalidate client cache on any mutation
+    clientCache.clear();
+  }
+
   return data as T;
 }
 
@@ -52,6 +78,7 @@ export const authApi = {
   getMe: () => request<{ user: AdminUser }>('/auth/me'),
   logout: () => {
     clearToken();
+    clearClientCache();
     return request<{ message: string }>('/auth/logout', { method: 'POST' });
   },
 };
@@ -96,6 +123,21 @@ export const ledgerApi = {
       };
     }>(`/ledger${q}`);
   },
+  // Public donation pledge submission
+  submitPublic: (data: {
+    animal_id?: string;
+    donor_name: string;
+    amount: number;
+    payment_method?: string;
+    reference_id?: string;
+    receipt_url?: string;
+    notes?: string;
+  }) =>
+    request<{ message: string; entry: LedgerEntry }>('/ledger/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  // Admin authenticated endpoints
   create: (data: Partial<LedgerEntry>) =>
     request<{ entry: LedgerEntry }>('/ledger', {
       method: 'POST',
@@ -128,13 +170,24 @@ export const statsApi = {
     }),
 };
 
-// Upload API (Cloudflare R2 or local disk)
+// Upload API (Cloudinary / Local Disk)
 export const uploadApi = {
   uploadSingle: async (file: File, folder = 'animals') => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
     return request<{ file: { url: string; key: string } }>('/upload/single', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+  uploadMultiple: async (files: File[], folder = 'animals') => {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('files', file);
+    }
+    formData.append('folder', folder);
+    return request<{ message: string; files: Array<{ url: string; key: string }> }>('/upload/multiple', {
       method: 'POST',
       body: formData,
     });

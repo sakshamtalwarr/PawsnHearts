@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { query } from '../config/db';
+import { apiCache, cacheKeys, invalidateCache } from '../utils/cache';
 
 function slugify(text: string): string {
   return text
@@ -16,6 +17,17 @@ function slugify(text: string): string {
 export const getAnimals = async (req: Request, res: Response): Promise<void> => {
   try {
     const { category, status, search, limit = 50, offset = 0 } = req.query;
+    const cacheKey = cacheKeys.animalsList(`${category || 'all'}_${status || 'all'}_${search || ''}_${limit}_${offset}`);
+
+    if (!search) {
+      const cached = apiCache.get(cacheKey);
+      if (cached) {
+        res.setHeader('X-Cache', 'HIT');
+        res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+        res.json(cached);
+        return;
+      }
+    }
 
     let sql = `
       SELECT 
@@ -56,7 +68,13 @@ export const getAnimals = async (req: Request, res: Response): Promise<void> => 
     params.push(Number(limit), Number(offset));
 
     const result = await query(sql, params);
-    res.json({ animals: result.rows });
+    const payload = { animals: result.rows };
+    if (!search) {
+      apiCache.set(cacheKey, payload, 60);
+    }
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+    res.json(payload);
   } catch (err: any) {
     console.error('getAnimals error:', err);
     res.status(500).json({ error: 'Failed to retrieve animals' });
@@ -66,6 +84,15 @@ export const getAnimals = async (req: Request, res: Response): Promise<void> => 
 export const getAnimalBySlug = async (req: Request, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
+    const cacheKey = cacheKeys.animalDetail(slug);
+    const cached = apiCache.get(cacheKey);
+
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+      res.json(cached);
+      return;
+    }
 
     const sql = `
       SELECT 
@@ -98,7 +125,11 @@ export const getAnimalBySlug = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    res.json({ animal: result.rows[0] });
+    const payload = { animal: result.rows[0] };
+    apiCache.set(cacheKey, payload, 60);
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+    res.json(payload);
   } catch (err: any) {
     console.error('getAnimalBySlug error:', err);
     res.status(500).json({ error: 'Failed to retrieve animal details' });
@@ -177,6 +208,9 @@ export const createAnimal = async (req: Request, res: Response): Promise<void> =
         }
       }
     }
+
+    // Invalidate cache
+    invalidateCache.animals();
 
     res.status(201).json({
       message: 'Animal profile created successfully',
@@ -268,6 +302,9 @@ export const updateAnimal = async (req: Request, res: Response): Promise<void> =
       }
     }
 
+    // Invalidate cache
+    invalidateCache.animals();
+
     res.json({
       message: 'Animal updated successfully',
       animal: result.rows[0],
@@ -287,6 +324,9 @@ export const deleteAnimal = async (req: Request, res: Response): Promise<void> =
       res.status(404).json({ error: 'Animal not found' });
       return;
     }
+
+    // Invalidate cache
+    invalidateCache.animals();
 
     res.json({ message: `Animal "${result.rows[0].name}" deleted successfully` });
   } catch (err: any) {
