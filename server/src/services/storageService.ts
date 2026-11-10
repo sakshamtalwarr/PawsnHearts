@@ -5,20 +5,30 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 // 1. Cloudinary (100% Free, NO Credit Card Required)
-const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
-const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
-const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+let isCloudinaryConfigured = false;
 
-const isCloudinaryConfigured = Boolean(
-  cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret
-);
-
-if (isCloudinaryConfigured) {
+if (process.env.CLOUDINARY_URL) {
   cloudinary.config({
-    cloud_name: cloudinaryCloudName,
-    api_key: cloudinaryApiKey,
-    api_secret: cloudinaryApiSecret,
+    cloudinary_url: process.env.CLOUDINARY_URL,
   });
+  isCloudinaryConfigured = true;
+  console.log('✅ Cloudinary Storage configured via CLOUDINARY_URL (No Credit Card required)');
+} else if (
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+) {
+  // If user pasted a cloud name with space or display name, extract from URL or sanitize
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME.includes(' ') && process.env.CLOUDINARY_URL
+    ? process.env.CLOUDINARY_URL.split('@')[1]
+    : process.env.CLOUDINARY_CLOUD_NAME.trim();
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: process.env.CLOUDINARY_API_KEY.trim(),
+    api_secret: process.env.CLOUDINARY_API_SECRET.trim(),
+  });
+  isCloudinaryConfigured = true;
   console.log('✅ Cloudinary Storage configured (No Credit Card required)');
 }
 
