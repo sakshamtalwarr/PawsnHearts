@@ -27,11 +27,12 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'photo' | 'xray' | 'prescription' | 'bill' | 'video'>('all');
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const [imageFit, setImageFit] = useState<'cover' | 'contain'>('cover');
+  const [customFit, setCustomFit] = useState<'cover' | 'contain' | null>(null);
 
   useEffect(() => {
     setActiveMediaIndex(0);
     setSelectedFilter('all');
+    setCustomFit(null);
   }, [animal?.id, animal?.slug]);
 
   if (!animal) return null;
@@ -104,17 +105,11 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
 
   const currentMedia = filteredMedia[activeMediaIndex] || filteredMedia[0] || rawMediaList[0];
 
-  useEffect(() => {
-    if (
-      currentMedia?.media_type === 'xray' ||
-      currentMedia?.media_type === 'bill' ||
-      currentMedia?.media_type === 'prescription'
-    ) {
-      setImageFit('contain');
-    } else {
-      setImageFit('cover');
-    }
-  }, [currentMedia?.media_type, activeMediaIndex]);
+  const isDoc =
+    currentMedia?.media_type === 'xray' ||
+    currentMedia?.media_type === 'bill' ||
+    currentMedia?.media_type === 'prescription';
+  const imageFit = customFit || (isDoc ? 'contain' : 'cover');
 
   const fundsNeeded = Number(animal.funds_needed || 0);
   const fundsRaised = Number(animal.funds_raised || 0);
@@ -214,7 +209,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               <div className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-20 flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setImageFit((prev) => (prev === 'cover' ? 'contain' : 'cover'))}
+                  onClick={() => setCustomFit((prev) => (prev === 'contain' ? 'cover' : 'contain'))}
                   className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
                   title={imageFit === 'cover' ? 'Show full uncropped image (Fit)' : 'Fill top banner (Fill)'}
                 >

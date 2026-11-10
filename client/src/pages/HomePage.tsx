@@ -265,11 +265,13 @@ export const HomePage: React.FC = () => {
       <LedgerSection />
 
       {/* Pet Lightbox Modal */}
-      <PetModal
-        animal={selectedAnimal}
-        onClose={() => setSelectedAnimal(null)}
-        onDonateForAnimal={handleDonateForAnimal}
-      />
+      {selectedAnimal && (
+        <PetModal
+          animal={selectedAnimal}
+          onClose={() => setSelectedAnimal(null)}
+          onDonateForAnimal={handleDonateForAnimal}
+        />
+      )}
 
       <Footer settings={settings} />
     </div>
