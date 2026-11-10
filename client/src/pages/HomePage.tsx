@@ -139,7 +139,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {treatmentAnimals.length === 0 && !loading ? (
+        {treatmentAnimals.length === 0 ? (
           <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base">
             All previous critical trauma rescues have been fully treated and rehabilitated! 🎉
           </div>
@@ -176,7 +176,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {adoptionAnimals.length === 0 && !loading ? (
+        {adoptionAnimals.length === 0 ? (
           <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base">
             All previously rescued puppies have found loving foster or forever homes! Meet them in Success Stories below. 🐶
           </div>
