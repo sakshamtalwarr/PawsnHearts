@@ -35,7 +35,7 @@ export const Navbar: React.FC = () => {
               (e.target as HTMLElement).style.display = 'none';
             }}
           />
-          <span className="font-script text-2xl md:text-3xl font-bold text-brand-500 tracking-wide">
+          <span className="font-script text-2xl md:text-3xl font-bold text-pink-500 tracking-wide">
             Paws&Hearts
           </span>
         </a>
@@ -44,32 +44,32 @@ export const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-1 font-bold text-slate-700 text-sm">
           <a
             href="/#adopt"
-            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-brand-500 transition-all"
+            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-pink-600 transition-all"
           >
             Adopt
           </a>
           <a
             href="/#treatment"
-            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-brand-500 transition-all"
+            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-pink-600 transition-all"
           >
             Medical Cases
           </a>
           <a
             href="/#success"
-            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-brand-500 transition-all"
+            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-pink-600 transition-all"
           >
             Success Stories
           </a>
           <a
             href="/#ledger"
-            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-brand-500 transition-all flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-full hover:bg-white hover:text-pink-600 transition-all flex items-center gap-1.5"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             Live Ledger
           </a>
           <a
             href="/#donate"
-            className="ml-2 px-5 py-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-500 text-white shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 hover:scale-[1.02] transition-all flex items-center gap-1.5"
+            className="ml-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-400 via-rose-500 to-amber-500 text-white shadow-md shadow-pink-500/20 hover:shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] transition-all flex items-center gap-1.5"
           >
             <Heart className="w-4 h-4 fill-white" />
             Donate

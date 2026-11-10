@@ -89,23 +89,23 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
   };
 
   return (
-    <section id="donate" className="py-20 px-4 max-w-5xl mx-auto">
+    <section id="donate" className="py-20 px-4 max-w-5xl mx-auto relative z-10">
       <div className="text-center mb-12">
-        <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-bold bg-brand-100 text-brand-800 mb-3">
-          <Heart className="w-3.5 h-3.5 fill-brand-500 text-brand-500" />
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-3 font-display">
+          <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
           Support Our Rescues
         </span>
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
-          Help Fund Vital Surgeries & Food
+        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
+          Help Fund Vital Surgeries & Food 💖
         </h2>
-        <p className="text-slate-600 text-sm md:text-base max-w-xl mx-auto mt-2">
+        <p className="text-slate-600 text-sm md:text-base max-w-xl mx-auto mt-2 font-medium">
           Every contribution goes 100% towards emergency veterinary medicine, foster nutrition, and rescue surgeries. All donations are published to the public ledger.
         </p>
       </div>
 
       {/* Sponsoring specific animal banner */}
       {activeAnimalName && (
-        <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-brand-500 to-amber-500 text-white font-bold flex items-center justify-between shadow-lg animate-bounce">
+        <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-bold flex items-center justify-between shadow-lg animate-bounce">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-amber-200" />
             <span>
@@ -121,7 +121,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-100">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-white/95 rounded-3xl p-6 sm:p-10 shadow-xl border border-pink-200/80 shadow-pink-100/50">
         {/* Left Col: Amount Selection & Direct Pay */}
         <div className="md:col-span-7 flex flex-col justify-between">
           <div>
@@ -192,7 +192,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
           {/* Instant UPI Pay Button */}
           <button
             onClick={handleOpenUpiApp}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-400 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-extrabold text-base md:text-lg shadow-lg shadow-brand-500/25 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white font-extrabold text-base md:text-lg shadow-lg shadow-pink-500/25 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 font-display"
           >
             <Smartphone className="w-5 h-5" /> Pay ₹{amount || 0} via Any UPI App (GPay/PhonePe/Paytm)
           </button>

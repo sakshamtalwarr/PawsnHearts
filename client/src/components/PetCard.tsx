@@ -19,7 +19,7 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect }) => {
   return (
     <div
       onClick={() => onSelect(animal)}
-      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-100 transition-all duration-300 hover:-translate-y-1.5 flex flex-col cursor-pointer"
+      className="group bg-white/95 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-pink-200/50 border border-pink-200/70 hover:border-pink-300 transition-all duration-300 hover:-translate-y-1.5 flex flex-col cursor-pointer"
     >
       {/* Media Cover */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">

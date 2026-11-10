@@ -62,8 +62,12 @@ export const HomePage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fff9ef] relative">
-      {/* Playful Floating Pets & Companions */}
+    <div className="min-h-screen flex flex-col bg-[#fff0f5] relative">
+      {/* 1. Seamless Doodle Paw Pattern & Baby Pink Ambient Gradient */}
+      <div className="site-bg-pattern" />
+      <div className="pink-ambient-glow" />
+
+      {/* 2. Playful Floating Pets & Companion */}
       <PlayfulPets />
 
       <Navbar />
@@ -73,7 +77,7 @@ export const HomePage: React.FC = () => {
       <section id="treatment" className="py-20 px-4 max-w-6xl mx-auto w-full relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 mb-3 font-display">
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-3 font-display">
               <Activity className="w-3.5 h-3.5 text-rose-500" />
               Critical Roadside Rescues
             </span>
@@ -87,8 +91,8 @@ export const HomePage: React.FC = () => {
         </div>
 
         {treatmentAnimals.length === 0 && !loading ? (
-          <div className="bg-white/70 backdrop-blur-md rounded-3xl p-12 text-center text-slate-500 font-semibold border border-amber-100 shadow-sm">
-            No active critical emergency cases at this moment! 🎉
+          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm">
+            All previous critical trauma rescues have been fully treated and rehabilitated! 🎉
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -105,8 +109,8 @@ export const HomePage: React.FC = () => {
       <section id="adopt" className="py-20 px-4 max-w-6xl mx-auto w-full relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 mb-3 font-display">
-              <Heart className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-3 font-display">
+              <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
               Forever Companions
             </span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
@@ -119,8 +123,8 @@ export const HomePage: React.FC = () => {
         </div>
 
         {adoptionAnimals.length === 0 && !loading ? (
-          <div className="bg-white/70 backdrop-blur-md rounded-3xl p-12 text-center text-slate-500 font-semibold border border-amber-100 shadow-sm">
-            All adoption-ready dogs have currently found foster or forever homes!
+          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm">
+            All previously rescued puppies have found loving foster or forever homes! Meet them in Success Stories below. 🐶
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

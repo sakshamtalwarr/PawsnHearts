@@ -4,36 +4,70 @@
 
 @layer utilities {
   .glass-card {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 209, 220, 0.7);
+    box-shadow: 0 15px 35px rgba(255, 182, 193, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
   }
 
   .glass-nav {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 15px 35px rgba(243, 156, 18, 0.08), inset 0 2px 4px rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(255, 209, 220, 0.8);
+    box-shadow: 0 12px 30px rgba(255, 182, 193, 0.18), inset 0 2px 4px rgba(255, 255, 255, 0.95);
   }
 
   .text-shadow-sm {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  }
+
+  .pink-gradient {
+    background: linear-gradient(135deg, #fff0f5 0%, #ffe4ea 50%, #fdf2f8 100%);
+  }
+
+  .pink-glow {
+    box-shadow: 0 0 25px rgba(244, 114, 182, 0.25);
   }
 }
 
-/* Playful Paw Floating Background particles */
+/* Seamless Doodle Pattern Background across entire site */
+.site-bg-pattern {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url('/pattern.jpg');
+  background-repeat: repeat;
+  background-size: 380px auto;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+}
+
+/* Baby Pink Ambient Glow Blobs */
+.pink-ambient-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    radial-gradient(circle at 10% 15%, rgba(255, 192, 203, 0.35) 0%, transparent 40%),
+    radial-gradient(circle at 90% 45%, rgba(255, 182, 193, 0.3) 0%, transparent 45%),
+    radial-gradient(circle at 40% 85%, rgba(254, 205, 211, 0.35) 0%, transparent 40%);
+}
+
+/* Floating Paw particle drift */
 @keyframes pawDrift {
   0% {
     transform: translateY(100vh) rotate(0deg) scale(0.8);
     opacity: 0;
   }
   15% {
-    opacity: 0.18;
+    opacity: 0.16;
   }
   85% {
-    opacity: 0.18;
+    opacity: 0.16;
   }
   100% {
     transform: translateY(-20vh) rotate(45deg) scale(1.1);
@@ -44,9 +78,9 @@
 .floating-paw {
   position: fixed;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
   animation: pawDrift linear infinite;
-  color: #f39c12;
+  color: #fb7185;
 }
 
 /* Custom scrollbars */
@@ -55,12 +89,12 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #fdf6ec;
+  background: #fff0f5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #e2c499;
+  background: #fbcfe8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4a362;
+  background: #f472b6;
 }
