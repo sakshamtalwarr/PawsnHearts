@@ -47,21 +47,21 @@
       "source": "/pet/(.*)",
       "destination": {
         "service": "client",
-        "path": "/"
+        "path": "/index.html"
       }
     },
     {
       "source": "/animals/(.*)",
       "destination": {
         "service": "client",
-        "path": "/"
+        "path": "/index.html"
       }
     },
     {
       "source": "/admin/(.*)",
       "destination": {
         "service": "client",
-        "path": "/"
+        "path": "/index.html"
       }
     },
     {
