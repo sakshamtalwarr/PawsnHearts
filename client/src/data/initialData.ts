@@ -452,8 +452,8 @@ export const INITIAL_LEDGER: LedgerEntry[] = [
 
 export const INITIAL_STATS: Stats = {
   page_views: 1340,
-  total_raised: 180000,
-  total_expenses: 165000,
+  total_raised: 10751,
+  total_expenses: 9850,
   active_treatments: 1,
   animals_adopted: 2,
   animals_recovered: 3,

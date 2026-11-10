@@ -110,6 +110,8 @@ export const HomePage: React.FC = () => {
     (a) => a.category === 'treatment' && a.status !== 'recovered' && a.status !== 'adopted'
   );
 
+  const featuredAnimal = animals.find((a) => a.status === 'urgent') || treatmentAnimals[0] || animals[0];
+
   return (
     <div className="min-h-screen flex flex-col bg-[#fff0f5] relative">
       {/* 1. Seamless Doodle Paw Pattern & Baby Pink Ambient Gradient */}
@@ -120,7 +122,13 @@ export const HomePage: React.FC = () => {
       <PlayfulPets />
 
       <Navbar />
-      <Hero stats={stats} settings={settings} />
+      <Hero
+        stats={stats}
+        settings={settings}
+        featuredAnimal={featuredAnimal}
+        onDonateForAnimal={handleDonateForAnimal}
+        onSelectAnimal={setSelectedAnimal}
+      />
 
       {/* 1. Urgent Medical Treatments Section */}
       <section id="treatment" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">

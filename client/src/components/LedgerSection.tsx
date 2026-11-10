@@ -29,9 +29,9 @@ export const LedgerSection: React.FC = () => {
   const [summary, setSummary] = useState<any>(() => {
     try {
       const item = localStorage.getItem('paws_ledger_summary');
-      return item ? JSON.parse(item) : { total_verified_donations: 180000, total_pending_donations: 0, total_expenses: 165000 };
+      return item ? JSON.parse(item) : { total_verified_donations: 10751, total_pending_donations: 0, total_expenses: 9850 };
     } catch {
-      return { total_verified_donations: 180000, total_pending_donations: 0, total_expenses: 165000 };
+      return { total_verified_donations: 10751, total_pending_donations: 0, total_expenses: 9850 };
     }
   });
   const [search, setSearch] = useState('');
