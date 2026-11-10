@@ -10,8 +10,9 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
-// Auto-initialize Neon database if tables are missing
+// Auto-initialize Neon database if tables are missing (non-blocking)
 async function ensureDbInitialized() {
+  if (process.env.VERCEL) return; // Skip in serverless to ensure instant 0ms cold starts
   try {
     const res = await query("SELECT to_regclass('public.animals') as tbl_exists");
     if (!res.rows[0]?.tbl_exists) {
@@ -27,7 +28,7 @@ async function ensureDbInitialized() {
     // Resilient in-memory fallback handles any initial connection delay
   }
 }
-ensureDbInitialized();
+setTimeout(ensureDbInitialized, 1000);
 
 // Route imports
 import authRoutes from './routes/authRoutes';
@@ -224,14 +225,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-const isServerless = Boolean(
-  process.env.VERCEL ||
-  process.env.NOW_REGION ||
-  process.env.VERCEL_ENV ||
-  process.env.AWS_LAMBDA_FUNCTION_NAME
-);
-
-if (!isServerless && process.env.NODE_ENV !== 'test') {
+// Standalone runner (only listens when executed directly via `node dist/index.js`, not when imported by Vercel serverless)
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🐾 Paws&Hearts server listening on port ${PORT}`);
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);

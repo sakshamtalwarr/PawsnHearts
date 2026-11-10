@@ -48,7 +48,7 @@ export const HomePage: React.FC = () => {
         selectedAnimal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'
       } | Paws&Hearts`;
     } else {
-      document.title = '🐾 Help TinTin Walk Again | Emergency Hip Surgery Fund - Paws&Hearts Bengaluru';
+      document.title = '🐾 Paws&Hearts Bengaluru - Giving Every Street Dog A Second Chance';
     }
   }, [selectedAnimal]);
 

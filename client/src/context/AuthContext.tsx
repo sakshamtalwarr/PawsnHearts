@@ -6,6 +6,7 @@ interface AuthContextType {
   user: AdminUser | null;
   loading: boolean;
   login: (creds: { email: string; password: string }) => Promise<void>;
+  updateProfile: (data: { email: string; name?: string; currentPassword: string; newPassword?: string }) => Promise<string>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -44,6 +45,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res.user);
   };
 
+  const updateProfile = async (data: { email: string; name?: string; currentPassword: string; newPassword?: string }) => {
+    const res = await authApi.updateProfile(data);
+    setToken(res.token);
+    setUser(res.user);
+    return res.message;
+  };
+
   const logout = async () => {
     try {
       await authApi.logout();
@@ -54,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, updateProfile, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

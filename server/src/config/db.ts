@@ -219,6 +219,24 @@ function handleFallbackQuery(text: string, params?: any[]): any {
     return { rows: [fallbackStore.admin], rowCount: 1 };
   }
 
+  if (norm.includes('from admin_users where email = $1 and id !=')) {
+    const email = params?.[0];
+    const id = params?.[1];
+    if (email && email.toLowerCase() === fallbackStore.admin.email.toLowerCase() && fallbackStore.admin.id !== id) {
+      return { rows: [fallbackStore.admin], rowCount: 1 };
+    }
+    return { rows: [], rowCount: 0 };
+  }
+
+  if (norm.includes('update admin_users')) {
+    if (params) {
+      if (params[0]) fallbackStore.admin.email = params[0];
+      if (params[1]) fallbackStore.admin.name = params[1];
+      if (params[2]) fallbackStore.admin.password_hash = params[2];
+    }
+    return { rows: [fallbackStore.admin], rowCount: 1 };
+  }
+
   // Settings
   if (norm.includes('select key, value from site_settings')) {
     const rows = Object.entries(fallbackStore.settings).map(([key, value]) => ({ key, value }));

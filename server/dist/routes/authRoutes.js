@@ -8,4 +8,6 @@ router.post('/login', authController_1.login);
 router.get('/me', authMiddleware_1.requireAuth, authController_1.me);
 router.post('/logout', authController_1.logout);
 router.post('/change-password', authMiddleware_1.requireAuth, authController_1.changePassword);
+router.put('/profile', authMiddleware_1.requireAuth, authController_1.updateProfile);
+router.post('/update-profile', authMiddleware_1.requireAuth, authController_1.updateProfile);
 exports.default = router;

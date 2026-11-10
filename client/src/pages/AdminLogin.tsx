@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, ArrowLeft, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Lock, ArrowLeft, AlertCircle, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useBackendStatus } from '../context/BackendStatusContext';
 
 export const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
+  const { isWakingUp, checkStatus } = useBackendStatus();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +23,12 @@ export const AdminLogin: React.FC = () => {
       await login({ email, password });
       navigate('/admin');
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password.');
+      if (err.message?.includes('500') || err.message?.includes('fetch') || err.message?.includes('Failed')) {
+        setError('Backend server is waking up from free-tier sleep. Please wait ~15 seconds and try again!');
+        checkStatus();
+      } else {
+        setError(err.message || 'Invalid email or password.');
+      }
     } finally {
       setLoading(false);
     }
@@ -49,6 +56,13 @@ export const AdminLogin: React.FC = () => {
             Sign in to manage rescue animals, upload media, and verify ledger donations.
           </p>
         </div>
+
+        {isWakingUp && (
+          <div className="mb-5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+            <span>🐾 Server is waking up from sleep. First login may take ~15s.</span>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold flex items-center gap-2">

@@ -25,17 +25,33 @@ import {
   Check,
   Smartphone,
   Eye,
+  Lock,
+  Mail,
+  User,
+  Key,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Animal, AnimalMedia, LedgerEntry, Stats, SiteSettings, MediaType } from '../types';
 import { animalsApi, ledgerApi, statsApi, uploadApi } from '../api/client';
 
 export const AdminDashboard: React.FC = () => {
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, logout, loading: authLoading, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'animals' | 'ledger' | 'settings'>('overview');
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'pending' | 'verified' | 'expense'>('all');
+
+  // Admin Account & Password State
+  const [profileName, setProfileName] = useState(user?.name || '');
+  const [profileEmail, setProfileEmail] = useState(user?.email || '');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileFeedback, setProfileFeedback] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({
+    type: 'idle',
+    message: '',
+  });
 
   // Data states
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -333,6 +349,68 @@ export const AdminDashboard: React.FC = () => {
       alert('Settings saved successfully!');
     } catch (err: any) {
       alert(err.message || 'Failed to save settings');
+    }
+  };
+
+  // Sync profile data when user changes
+  useEffect(() => {
+    if (user) {
+      if (user.name) setProfileName(user.name);
+      if (user.email) setProfileEmail(user.email);
+    }
+  }, [user]);
+
+  // Profile & Password Update Handler
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileFeedback({ type: 'idle', message: '' });
+
+    if (!currentPassword) {
+      setProfileFeedback({ type: 'error', message: 'Current password is required to verify your identity.' });
+      return;
+    }
+
+    if (newPassword) {
+      if (newPassword.length < 6) {
+        setProfileFeedback({ type: 'error', message: 'New password must be at least 6 characters.' });
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setProfileFeedback({ type: 'error', message: 'New passwords do not match.' });
+        return;
+      }
+    }
+
+    setProfileSaving(true);
+    try {
+      const res = await updateProfile({
+        name: profileName.trim(),
+        email: profileEmail.trim(),
+        currentPassword,
+        newPassword: newPassword || undefined,
+      });
+
+      if (res.success) {
+        setProfileFeedback({
+          type: 'success',
+          message: 'Account details & password updated successfully!',
+        });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setProfileFeedback({
+          type: 'error',
+          message: res.error || 'Failed to update account.',
+        });
+      }
+    } catch (err: any) {
+      setProfileFeedback({
+        type: 'error',
+        message: err.message || 'Failed to update account credentials.',
+      });
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -761,77 +839,209 @@ export const AdminDashboard: React.FC = () => {
 
         {/* TAB 4: SETTINGS */}
         {activeTab === 'settings' && (
-          <div className="max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-white mb-4 font-display">Site & Contact Settings</h2>
-            <form onSubmit={handleSaveSettings} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                  UPI ID (VPA)
-                </label>
-                <input
-                  type="text"
-                  value={siteSettings.upi_id}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, upi_id: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
-                />
+          <div className="space-y-8 max-w-2xl">
+            {/* 1. Site & Contact Settings */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4 font-display flex items-center gap-2">
+                <Settings className="w-5 h-5 text-pink-500" />
+                Site & Contact Settings
+              </h2>
+              <form onSubmit={handleSaveSettings} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                    UPI ID (VPA)
+                  </label>
+                  <input
+                    type="text"
+                    value={siteSettings.upi_id}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, upi_id: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                    Payee Account Name
+                  </label>
+                  <input
+                    type="text"
+                    value={siteSettings.payee_name}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, payee_name: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                    Helpline WhatsApp / Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={siteSettings.contact_phone}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, contact_phone: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                    Location / City
+                  </label>
+                  <input
+                    type="text"
+                    value={siteSettings.contact_location}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, contact_location: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                    Emergency Broadcast Banner (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={siteSettings.emergency_banner || ''}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, emergency_banner: e.target.value })}
+                    placeholder="e.g. Critical Surgery Fund for Injured Rescue Ongoing Now!"
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg transition-all font-display"
+                >
+                  <Save className="w-4 h-4" /> Save Settings
+                </button>
+              </form>
+            </div>
+
+            {/* 2. Admin Account & Credentials (Email & Password) */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-amber-400" />
+                  Admin Account & Security
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Update your admin login email address and change your dashboard access password.
+                </p>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                  Payee Account Name
-                </label>
-                <input
-                  type="text"
-                  value={siteSettings.payee_name}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, payee_name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
-                />
-              </div>
+              {profileFeedback.message && (
+                <div
+                  className={`p-3 rounded-xl text-xs font-semibold mb-4 flex items-center gap-2 ${
+                    profileFeedback.type === 'success'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                  }`}
+                >
+                  {profileFeedback.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+                  )}
+                  <span>{profileFeedback.message}</span>
+                </div>
+              )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                  Helpline WhatsApp / Phone
-                </label>
-                <input
-                  type="text"
-                  value={siteSettings.contact_phone}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, contact_phone: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
-                />
-              </div>
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-slate-400" />
+                    Admin Display Name
+                  </label>
+                  <input
+                    type="text"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-pink-500 focus:outline-none"
+                    placeholder="Rescue Administrator"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                  Location / City
-                </label>
-                <input
-                  type="text"
-                  value={siteSettings.contact_location}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, contact_location: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    Login Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={profileEmail}
+                    onChange={(e) => setProfileEmail(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-pink-500 focus:outline-none"
+                    placeholder="admin@pawsnhearts.org"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    This email is used to log in to the admin panel.
+                  </p>
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                  Emergency Broadcast Banner (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={siteSettings.emergency_banner || ''}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, emergency_banner: e.target.value })}
-                  placeholder="e.g. Critical Surgery Fund for Tintin Ongoing Now!"
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm"
-                />
-              </div>
+                <div className="border-t border-slate-800 pt-4 space-y-4">
+                  <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-amber-400" />
+                    Change Password (Optional)
+                  </div>
 
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg transition-all font-display"
-              >
-                <Save className="w-4 h-4" /> Save Settings
-              </button>
-            </form>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Leave blank to keep existing password"
+                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-pink-500 focus:outline-none"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">Minimum 6 characters</p>
+                  </div>
+
+                  {newPassword && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Retype your new password"
+                        required
+                        className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-pink-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-slate-800 pt-4">
+                  <label className="block text-xs font-bold text-amber-400 uppercase mb-1 flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5" />
+                    Current Password (Required to Save Changes)
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password to confirm"
+                    required
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-amber-500/40 rounded-xl text-white text-sm focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={profileSaving}
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg transition-all font-display"
+                >
+                  <Save className="w-4 h-4" />
+                  {profileSaving ? 'Updating...' : 'Update Account & Password'}
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </div>

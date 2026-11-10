@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePassword = exports.logout = exports.me = exports.login = void 0;
+exports.updateProfile = exports.changePassword = exports.logout = exports.me = exports.login = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = require("../config/db");
@@ -107,3 +107,83 @@ const changePassword = async (req, res) => {
     }
 };
 exports.changePassword = changePassword;
+const updateProfile = async (req, res) => {
+    try {
+        const { email, name, currentPassword, newPassword } = req.body;
+        if (!req.user) {
+            res.status(401).json({ error: 'Not authenticated' });
+            return;
+        }
+        if (!currentPassword) {
+            res.status(400).json({ error: 'Current password is required to save account changes' });
+            return;
+        }
+        // 1. Verify current password
+        const userRes = await (0, db_1.query)('SELECT id, email, password_hash, name, role FROM admin_users WHERE id = $1', [
+            req.user.id,
+        ]);
+        if (userRes.rows.length === 0) {
+            res.status(404).json({ error: 'Admin account not found' });
+            return;
+        }
+        const currentAdmin = userRes.rows[0];
+        const isMatch = await bcryptjs_1.default.compare(currentPassword, currentAdmin.password_hash);
+        if (!isMatch) {
+            res.status(400).json({ error: 'Incorrect current password' });
+            return;
+        }
+        // 2. Validate email if changing
+        const targetEmail = (email || currentAdmin.email).toLowerCase().trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+            res.status(400).json({ error: 'Please enter a valid email address' });
+            return;
+        }
+        if (targetEmail !== currentAdmin.email.toLowerCase()) {
+            const emailCheck = await (0, db_1.query)('SELECT id FROM admin_users WHERE email = $1 AND id != $2', [
+                targetEmail,
+                req.user.id,
+            ]);
+            if (emailCheck.rows.length > 0) {
+                res.status(400).json({ error: 'This email is already registered by another admin' });
+                return;
+            }
+        }
+        // 3. Handle new password if provided
+        let newHash = currentAdmin.password_hash;
+        if (newPassword && newPassword.trim().length > 0) {
+            if (newPassword.trim().length < 6) {
+                res.status(400).json({ error: 'New password must be at least 6 characters long' });
+                return;
+            }
+            newHash = await bcryptjs_1.default.hash(newPassword.trim(), 10);
+        }
+        const targetName = (name !== undefined ? name : currentAdmin.name).trim();
+        // 4. Update in database
+        await (0, db_1.query)(`UPDATE admin_users 
+       SET email = $1, name = $2, password_hash = $3, updated_at = NOW() 
+       WHERE id = $4`, [targetEmail, targetName, newHash, req.user.id]);
+        const updatedUser = {
+            id: req.user.id,
+            email: targetEmail,
+            name: targetName,
+            role: currentAdmin.role,
+        };
+        const newToken = jsonwebtoken_1.default.sign(updatedUser, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+        res.cookie('admin_token', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+        res.json({
+            message: 'Account details updated successfully!',
+            user: updatedUser,
+            token: newToken,
+        });
+    }
+    catch (err) {
+        console.error('Update profile error:', err);
+        res.status(500).json({ error: 'Failed to update account details' });
+    }
+};
+exports.updateProfile = updateProfile;

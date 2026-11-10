@@ -76,6 +76,11 @@ export const authApi = {
       body: JSON.stringify(credentials),
     }),
   getMe: () => request<{ user: AdminUser }>('/auth/me'),
+  updateProfile: (data: { email: string; name?: string; currentPassword: string; newPassword?: string }) =>
+    request<{ message: string; user: AdminUser; token: string }>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
   logout: () => {
     clearToken();
     clearClientCache();
