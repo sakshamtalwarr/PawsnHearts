@@ -14,29 +14,35 @@ dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') 
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../.env') });
 dotenv_1.default.config();
 // 1. Cloudinary (100% Free, NO Credit Card Required)
-let isCloudinaryConfigured = false;
-if (process.env.CLOUDINARY_URL) {
-    cloudinary_1.v2.config({
-        cloudinary_url: process.env.CLOUDINARY_URL,
-    });
-    isCloudinaryConfigured = true;
-    console.log('✅ Cloudinary Storage configured via CLOUDINARY_URL (No Credit Card required)');
+const DEFAULT_CLOUDINARY_CLOUD_NAME = 'dp2kretaw';
+const DEFAULT_CLOUDINARY_API_KEY = '168773142822859';
+const DEFAULT_CLOUDINARY_API_SECRET = 'REDACTED_CLOUDINARY_SECRET';
+let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || '').trim();
+let apiKey = (process.env.CLOUDINARY_API_KEY || '').trim();
+let apiSecret = (process.env.CLOUDINARY_API_SECRET || '').trim();
+const cloudinaryUrl = process.env.CLOUDINARY_URL;
+if (cloudinaryUrl && cloudinaryUrl.includes('@')) {
+    try {
+        const parsed = new URL(cloudinaryUrl);
+        cloudName = cloudName || parsed.hostname;
+        apiKey = apiKey || parsed.username;
+        apiSecret = apiSecret || parsed.password;
+    }
+    catch {
+        // Ignore URL parse error
+    }
 }
-else if (process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_SECRET) {
-    // If user pasted a cloud name with space or display name, extract from URL or sanitize
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME.includes(' ') && process.env.CLOUDINARY_URL
-        ? process.env.CLOUDINARY_URL.split('@')[1]
-        : process.env.CLOUDINARY_CLOUD_NAME.trim();
-    cloudinary_1.v2.config({
-        cloud_name: cloudName,
-        api_key: process.env.CLOUDINARY_API_KEY.trim(),
-        api_secret: process.env.CLOUDINARY_API_SECRET.trim(),
-    });
-    isCloudinaryConfigured = true;
-    console.log('✅ Cloudinary Storage configured (No Credit Card required)');
-}
+cloudName = cloudName || DEFAULT_CLOUDINARY_CLOUD_NAME;
+apiKey = apiKey || DEFAULT_CLOUDINARY_API_KEY;
+apiSecret = apiSecret || DEFAULT_CLOUDINARY_API_SECRET;
+cloudinary_1.v2.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true,
+});
+const isCloudinaryConfigured = true;
+console.log(`✅ Cloudinary Storage initialized (cloud_name: ${cloudName})`);
 // 2. Cloudflare R2 (Optional if user has card/PayPal)
 const r2AccountId = process.env.R2_ACCOUNT_ID;
 const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;

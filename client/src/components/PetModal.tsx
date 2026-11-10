@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   X,
   Heart,
@@ -9,8 +9,7 @@ import {
   ChevronRight,
   Phone,
   Share2,
-  Maximize2,
-  Minimize2,
+  ZoomIn,
   Video as VideoIcon,
 } from 'lucide-react';
 import { Animal, AnimalMedia, formatMediaUrl, MediaType } from '../types';
@@ -25,15 +24,28 @@ interface PetModalProps {
 export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateForAnimal }) => {
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'photo' | 'xray' | 'prescription' | 'bill' | 'video'>('all');
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const [customFit, setCustomFit] = useState<'cover' | 'contain' | null>(null);
 
   useEffect(() => {
     setActiveMediaIndex(0);
     setSelectedFilter('all');
-    setCustomFit(null);
+    setIsLightboxOpen(false);
   }, [animal?.id, animal?.slug]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsLightboxOpen(false);
+      } else if (e.key === 'ArrowLeft') {
+        setActiveMediaIndex((prev) => prev - 1);
+      } else if (e.key === 'ArrowRight') {
+        setActiveMediaIndex((prev) => prev + 1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   if (!animal) return null;
 
@@ -103,13 +115,9 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
     return true;
   });
 
-  const currentMedia = filteredMedia[activeMediaIndex] || filteredMedia[0] || rawMediaList[0];
-
-  const isDoc =
-    currentMedia?.media_type === 'xray' ||
-    currentMedia?.media_type === 'bill' ||
-    currentMedia?.media_type === 'prescription';
-  const imageFit = customFit || (isDoc ? 'contain' : 'cover');
+  const totalCount = filteredMedia.length;
+  const safeIndex = totalCount > 0 ? ((activeMediaIndex % totalCount) + totalCount) % totalCount : 0;
+  const currentMedia = filteredMedia[safeIndex] || rawMediaList[0];
 
   const fundsNeeded = Number(animal.funds_needed || 0);
   const fundsRaised = Number(animal.funds_raised || 0);
@@ -172,10 +180,8 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               <img
                 src={currentMedia?.url || animal.hero_image}
                 alt={animal.name}
-                className={`relative z-10 w-full h-full cursor-zoom-in transition-all duration-300 ${
-                  imageFit === 'cover' ? 'object-cover' : 'object-contain'
-                }`}
-                onClick={() => setLightboxUrl(currentMedia?.url || animal.hero_image || null)}
+                className="relative z-10 w-full h-full object-contain cursor-zoom-in transition-all duration-300"
+                onClick={() => setIsLightboxOpen(true)}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
                     animal.hero_image ||
@@ -204,79 +210,73 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               )}
             </div>
 
-            {/* Controls Cluster: Fit/Fill Toggle & Zoom */}
-            {currentMedia?.media_type !== 'video' && (
-              <div className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-20 flex items-center gap-1.5">
+            {/* Single Clear Zoom Button (Replaces duplicate fit/zoom controls) */}
+            {currentMedia?.media_type !== 'video' && currentMedia?.url && (
+              <div className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-20">
                 <button
                   type="button"
-                  onClick={() => setCustomFit((prev) => (prev === 'contain' ? 'cover' : 'contain'))}
-                  className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
-                  title={imageFit === 'cover' ? 'Show full uncropped image (Fit)' : 'Fill top banner (Fill)'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLightboxOpen(true);
+                  }}
+                  className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1.5 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
+                  title="Zoom into photo"
                 >
-                  {imageFit === 'cover' ? (
-                    <Minimize2 className="w-3.5 h-3.5 text-pink-300" />
-                  ) : (
-                    <Maximize2 className="w-3.5 h-3.5 text-pink-300" />
-                  )}
-                  <span className="hidden sm:inline">{imageFit === 'cover' ? 'Fit' : 'Fill'}</span>
+                  <ZoomIn className="w-3.5 h-3.5 text-pink-300" />
+                  <span>Zoom</span>
                 </button>
-
-                {currentMedia?.url && (
-                  <button
-                    type="button"
-                    onClick={() => setLightboxUrl(currentMedia.url)}
-                    className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95"
-                    title="Zoom into photo/document"
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Zoom</span>
-                  </button>
-                )}
               </div>
             )}
 
-            {/* Carousel Arrows */}
+            {/* Carousel Arrows - Elevated to z-30 with pointer-events-auto */}
             {filteredMedia.length > 1 && (
-              <div className="absolute inset-y-0 inset-x-2 sm:inset-x-3 flex items-center justify-between pointer-events-none">
+              <div className="absolute inset-y-0 inset-x-2 sm:inset-x-3 flex items-center justify-between z-30 pointer-events-none">
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : filteredMedia.length - 1));
                   }}
-                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors shadow-md"
+                  className="pointer-events-auto w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-slate-900/80 hover:bg-slate-950 text-white flex items-center justify-center transition-all shadow-xl border border-white/20 active:scale-90 hover:scale-105 cursor-pointer"
                   aria-label="Previous photo"
                 >
-                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     setActiveMediaIndex((prev) => (prev < filteredMedia.length - 1 ? prev + 1 : 0));
                   }}
-                  className="pointer-events-auto p-1.5 sm:p-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors shadow-md"
+                  className="pointer-events-auto w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-slate-900/80 hover:bg-slate-950 text-white flex items-center justify-center transition-all shadow-xl border border-white/20 active:scale-90 hover:scale-105 cursor-pointer"
                   aria-label="Next photo"
                 >
-                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
             )}
           </div>
 
           {/* Thumbnail Gallery Strip (Shows all uploaded photos & videos) */}
-          {rawMediaList.length > 1 && (
+          {filteredMedia.length > 1 && (
             <div className="bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center gap-2.5 overflow-x-auto scrollbar-none">
               <span className="text-[10px] uppercase font-black text-pink-400 tracking-wider font-display shrink-0 pl-0.5 flex items-center gap-1">
                 <span>📸</span>
-                <span>Gallery ({rawMediaList.length}):</span>
+                <span>Gallery ({filteredMedia.length}):</span>
               </span>
               {filteredMedia.map((item, idx) => {
-                const isActive = activeMediaIndex === idx;
+                const isActive = safeIndex === idx;
                 return (
                   <button
                     key={item.id || idx}
                     type="button"
-                    onClick={() => setActiveMediaIndex(idx)}
-                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMediaIndex(idx);
+                    }}
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                       isActive
                         ? 'border-pink-500 scale-105 shadow-md shadow-pink-500/40 ring-2 ring-pink-400/50'
                         : 'border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500'
@@ -518,24 +518,85 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
         </div>
       </div>
 
-      {/* Lightbox Modal */}
-      {lightboxUrl && (
+      {/* Fullscreen Lightbox Modal with Carousel Navigation */}
+      {isLightboxOpen && currentMedia && (
         <div
-          className="fixed inset-0 z-60 bg-black/90 flex flex-col items-center justify-center p-3 sm:p-4 backdrop-blur-md"
-          onClick={() => setLightboxUrl(null)}
+          className="fixed inset-0 z-60 bg-black/95 flex flex-col items-center justify-center p-3 sm:p-6 backdrop-blur-md animate-fade-in"
+          onClick={() => setIsLightboxOpen(false)}
         >
-          <button
-            onClick={() => setLightboxUrl(null)}
-            className="absolute top-4 right-4 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <img
-            src={lightboxUrl}
-            alt="Medical document"
-            className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+          {/* Top Bar: Counter & Close */}
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-40 pointer-events-none">
+            <span className="pointer-events-auto text-white/90 text-xs sm:text-sm font-bold bg-slate-900/80 px-3.5 py-1.5 rounded-full border border-white/10 font-display shadow-lg">
+              {safeIndex + 1} / {filteredMedia.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsLightboxOpen(false)}
+              className="pointer-events-auto p-2 sm:p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-all shadow-lg cursor-pointer"
+              aria-label="Close fullscreen view"
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+
+          {/* Lightbox Media Container */}
+          <div
+            className="relative max-w-full max-h-[82vh] flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
-          />
+          >
+            {currentMedia.media_type === 'video' ? (
+              <video
+                src={currentMedia.url}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-[82vh] rounded-2xl shadow-2xl"
+              />
+            ) : (
+              <img
+                src={currentMedia.url}
+                alt={currentMedia.caption || animal.name}
+                className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
+              />
+            )}
+          </div>
+
+          {/* Lightbox Caption */}
+          {currentMedia.caption && (
+            <p className="mt-3 text-white/90 text-xs sm:text-sm max-w-lg text-center bg-black/60 px-4 py-1.5 rounded-full backdrop-blur-sm border border-white/10 shadow-lg">
+              {currentMedia.caption}
+            </p>
+          )}
+
+          {/* Lightbox Previous / Next Navigation Arrows */}
+          {filteredMedia.length > 1 && (
+            <div className="absolute inset-y-0 inset-x-2 sm:inset-x-6 flex items-center justify-between z-40 pointer-events-none">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : filteredMedia.length - 1));
+                }}
+                className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center transition-all shadow-2xl border border-white/20 active:scale-90 hover:scale-105 cursor-pointer"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setActiveMediaIndex((prev) => (prev < filteredMedia.length - 1 ? prev + 1 : 0));
+                }}
+                className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center transition-all shadow-2xl border border-white/20 active:scale-90 hover:scale-105 cursor-pointer"
+                aria-label="Next photo"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 

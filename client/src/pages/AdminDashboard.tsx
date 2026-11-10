@@ -29,9 +29,10 @@ import {
   Mail,
   User,
   Key,
+  Star,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Animal, AnimalMedia, LedgerEntry, Stats, SiteSettings, MediaType } from '../types';
+import { Animal, AnimalMedia, LedgerEntry, Stats, SiteSettings, MediaType, formatMediaUrl } from '../types';
 import { animalsApi, ledgerApi, statsApi, uploadApi } from '../api/client';
 
 export const AdminDashboard: React.FC = () => {
@@ -135,10 +136,19 @@ export const AdminDashboard: React.FC = () => {
     if (!editingAnimal?.name) return alert('Animal name is required');
 
     try {
+      const toSave = { ...editingAnimal };
+      // Auto-populate hero_image if empty but media exists
+      if (!toSave.hero_image?.trim() && toSave.media && toSave.media.length > 0) {
+        const firstPhoto = toSave.media.find((m) => m.media_type !== 'video')?.url || toSave.media[0]?.url;
+        if (firstPhoto) {
+          toSave.hero_image = firstPhoto;
+        }
+      }
+
       if (editingAnimal.id) {
-        await animalsApi.update(editingAnimal.id, editingAnimal);
+        await animalsApi.update(editingAnimal.id, toSave);
       } else {
-        await animalsApi.create(editingAnimal);
+        await animalsApi.create(toSave);
       }
       setIsAnimalModalOpen(false);
       loadAllData();
@@ -214,9 +224,14 @@ export const AdminDashboard: React.FC = () => {
 
       setEditingAnimal((prev) => {
         if (!prev) return null;
+        const updatedMedia = [...(prev.media || []), ...newMediaItems];
+        const autoHero = !prev.hero_image?.trim()
+          ? newMediaItems.find((m) => m.media_type !== 'video')?.url || prev.hero_image
+          : prev.hero_image;
         return {
           ...prev,
-          media: [...(prev.media || []), ...newMediaItems],
+          hero_image: autoHero,
+          media: updatedMedia,
         };
       });
     } catch (err: any) {
@@ -1129,7 +1144,20 @@ export const AdminDashboard: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-400 mb-1">
                   Primary Profile Hero Image
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {editingAnimal.hero_image && (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-700 shrink-0 bg-slate-800">
+                      <img
+                        src={formatMediaUrl(editingAnimal.hero_image)}
+                        alt="Cover"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200';
+                        }}
+                      />
+                    </div>
+                  )}
                   <input
                     type="text"
                     value={editingAnimal.hero_image || ''}
@@ -1185,13 +1213,35 @@ export const AdminDashboard: React.FC = () => {
                         className="bg-slate-900 border border-slate-700 rounded-xl p-2.5 flex items-center gap-2.5 text-xs"
                       >
                         {/* Thumbnail */}
-                        <div className="w-12 h-12 bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                        <div className="w-12 h-12 bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-slate-700">
                           {item.media_type === 'video' ? (
                             <Video className="w-6 h-6 text-pink-400" />
                           ) : (
-                            <img src={item.url} alt="Media" className="w-full h-full object-cover" />
+                            <img
+                              src={formatMediaUrl(item.url)}
+                              alt={item.caption || 'Media'}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200';
+                              }}
+                            />
                           )}
                         </div>
+
+                        {/* Set as Cover Photo Star Button */}
+                        <button
+                          type="button"
+                          onClick={() => setEditingAnimal((prev) => (prev ? { ...prev, hero_image: item.url } : null))}
+                          className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 ${
+                            editingAnimal.hero_image === item.url
+                              ? 'text-amber-400 bg-amber-400/15 border border-amber-400/30'
+                              : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800'
+                          }`}
+                          title={editingAnimal.hero_image === item.url ? 'Primary cover photo' : 'Click to set as profile cover photo'}
+                        >
+                          <Star className={`w-3.5 h-3.5 ${editingAnimal.hero_image === item.url ? 'fill-amber-400' : ''}`} />
+                        </button>
 
                         {/* Category Dropdown */}
                         <select
