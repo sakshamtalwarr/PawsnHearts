@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Animal, AnimalMedia, formatMediaUrl, MediaType } from '../types';
 import { ShareModal } from './ShareModal';
+import ThumbnailImageViewer from './ui/thumbnail-image-viewer';
 
 // Generates an instant high-res JPEG poster thumbnail for Cloudinary videos
 export const getVideoPoster = (url?: string): string => {
@@ -148,275 +149,34 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
           className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-y-auto flex flex-col border border-pink-100 pet-modal-scroll-area scroll-smooth"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header Controls: Share & Close */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2">
+          {/* Header Controls: Share & Close (Floating on top right of viewer) */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setIsShareOpen(true)}
-              className="p-2 sm:p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-all shadow-md flex items-center gap-1 text-xs font-bold font-display"
+              className="p-2 sm:px-3 sm:py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white transition-all shadow-xl flex items-center gap-1 text-xs font-bold font-display border border-white/10 backdrop-blur-md cursor-pointer active:scale-95"
               title="Help fundraise by sharing"
             >
-              <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-300" />
+              <Share2 className="w-3.5 h-3.5 text-pink-300" />
               <span className="hidden sm:inline">Share</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 sm:p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-all shadow-md"
+              className="p-2 sm:p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white transition-all shadow-xl border border-white/10 backdrop-blur-md cursor-pointer active:scale-95"
               aria-label="Close"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
-          {/* Media Preview Section - Generous height & ambient fill to eliminate mobile letterboxing */}
-          <div className="relative aspect-[4/3] sm:aspect-[16/9] w-full min-h-[300px] sm:min-h-[380px] bg-slate-950 overflow-hidden flex items-center justify-center">
-            {/* Ambient blurred backdrop so letterbox gaps never look like an empty black void */}
-            {currentMedia?.media_type !== 'video' && (
-              <div
-                className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-125 pointer-events-none transition-all duration-500"
-                style={{
-                  backgroundImage: `url(${currentMedia?.url || animal.hero_image})`,
-                }}
-              />
-            )}
-
-            {currentMedia?.media_type === 'video' ? (
-              <video
-                key={currentMedia.url}
-                src={currentMedia.url}
-                poster={getVideoPoster(currentMedia.url)}
-                controls
-                playsInline
-                preload="auto"
-                className="relative z-10 w-full h-full object-contain bg-black"
-              >
-                <source src={currentMedia.url} type="video/mp4" />
-                Your browser does not support video playback.
-              </video>
-            ) : (
-              <img
-                src={currentMedia?.url || animal.hero_image}
-                alt={animal.name}
-                className="relative z-10 w-full h-full object-contain cursor-zoom-in transition-all duration-300"
-                onClick={() => setIsLightboxOpen(true)}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    animal.hero_image ||
-                    'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800';
-                }}
-              />
-            )}
-
-            {/* Media Type & Caption Tag */}
-            <div className="absolute bottom-2.5 left-2.5 sm:bottom-4 sm:left-4 z-20 bg-slate-900/85 backdrop-blur-md text-white text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 max-w-[65%] border border-white/10 shadow-lg">
-              <span className="font-bold text-pink-300 uppercase tracking-wider text-[9px] sm:text-[10px]">
-                {currentMedia?.media_type === 'xray'
-                  ? '🩻 X-Ray'
-                  : currentMedia?.media_type === 'bill'
-                  ? '🧾 Vet Bill'
-                  : currentMedia?.media_type === 'prescription'
-                  ? '📋 Report'
-                  : currentMedia?.media_type === 'video'
-                  ? '🎥 Video'
-                  : '📸 Photo'}
-              </span>
-              {currentMedia?.caption && (
-                <span className="truncate border-l border-slate-700 pl-1.5 text-slate-200">
-                  {currentMedia.caption}
-                </span>
-              )}
-            </div>
-
-            {/* Single Clear Zoom Button (Replaces duplicate fit/zoom controls) */}
-            {currentMedia?.media_type !== 'video' && currentMedia?.url && (
-              <div className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 z-20">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsLightboxOpen(true);
-                  }}
-                  className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] sm:text-xs flex items-center gap-1.5 font-bold shadow-lg border border-white/10 backdrop-blur-md transition-all active:scale-95 cursor-pointer"
-                  title="Zoom into photo"
-                >
-                  <ZoomIn className="w-3.5 h-3.5 text-pink-300" />
-                  <span>Zoom</span>
-                </button>
-              </div>
-            )}
-
-            {/* Carousel Arrows - Elevated to z-30 with pointer-events-auto */}
-            {filteredMedia.length > 1 && (
-              <div className="absolute inset-y-0 inset-x-2 sm:inset-x-3 flex items-center justify-between z-30 pointer-events-none">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : filteredMedia.length - 1));
-                  }}
-                  className="pointer-events-auto w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-slate-900/80 hover:bg-slate-950 text-white flex items-center justify-center transition-all shadow-xl border border-white/20 active:scale-90 hover:scale-105 cursor-pointer"
-                  aria-label="Previous photo"
-                >
-                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setActiveMediaIndex((prev) => (prev < filteredMedia.length - 1 ? prev + 1 : 0));
-                  }}
-                  className="pointer-events-auto w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-slate-900/80 hover:bg-slate-950 text-white flex items-center justify-center transition-all shadow-xl border border-white/20 active:scale-90 hover:scale-105 cursor-pointer"
-                  aria-label="Next photo"
-                >
-                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Thumbnail Gallery Strip (Shows all uploaded photos & videos) */}
-          {rawMediaList.length > 1 && (
-            <div className="bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center gap-2.5 overflow-x-auto scrollbar-none">
-              <span className="text-[10px] uppercase font-black text-pink-400 tracking-wider font-display shrink-0 pl-0.5 flex items-center gap-1">
-                <span>📸</span>
-                <span>Gallery ({filteredMedia.length}):</span>
-              </span>
-              {filteredMedia.map((item, idx) => {
-                const isActive = safeIndex === idx;
-                const videoPoster = getVideoPoster(item.url);
-                return (
-                  <button
-                    key={item.id || idx}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveMediaIndex(idx);
-                    }}
-                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer bg-slate-950 ${
-                      isActive
-                        ? 'border-pink-500 scale-105 shadow-md shadow-pink-500/40 ring-2 ring-pink-400/50'
-                        : 'border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500'
-                    }`}
-                    title={item.caption || `View item ${idx + 1}`}
-                  >
-                    {item.media_type === 'video' ? (
-                      <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
-                        {videoPoster ? (
-                          <img
-                            src={videoPoster}
-                            alt={item.caption || 'Video preview'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-slate-900 flex items-center justify-center">
-                            <VideoIcon className="w-5 h-5 text-pink-400" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <div className="w-6 h-6 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-md">
-                            <Play className="w-3 h-3 fill-white ml-0.5" />
-                          </div>
-                        </div>
-                        <span className="absolute bottom-1 right-1 bg-black/85 rounded px-1 text-[8px] text-pink-300 font-bold uppercase tracking-wider">
-                          VID
-                        </span>
-                      </div>
-                    ) : (
-                      <img
-                        src={item.url}
-                        alt={item.caption || `Photo ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Categorized Media Filter Tabs - Scrollable on mobile */}
-          {rawMediaList.length > 1 && (
-            <div className="bg-slate-50 border-b border-pink-100 px-3 py-2 flex items-center gap-1.5 overflow-x-auto text-[11px] sm:text-xs font-bold font-display scrollbar-none">
-              <button
-                onClick={() => {
-                  setSelectedFilter('all');
-                  setActiveMediaIndex(0);
-                }}
-                className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap ${
-                  selectedFilter === 'all'
-                    ? 'bg-pink-600 text-white shadow-sm'
-                    : 'bg-white text-slate-600 hover:bg-pink-50'
-                }`}
-              >
-                All ({rawMediaList.length})
-              </button>
-
-              {xrayCount > 0 && (
-                <button
-                  onClick={() => {
-                    setSelectedFilter('xray');
-                    setActiveMediaIndex(0);
-                  }}
-                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
-                    selectedFilter === 'xray'
-                      ? 'bg-pink-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 hover:bg-pink-50'
-                  }`}
-                >
-                  🩻 X-Rays ({xrayCount})
-                </button>
-              )}
-
-              {reportCount > 0 && (
-                <button
-                  onClick={() => {
-                    setSelectedFilter('prescription');
-                    setActiveMediaIndex(0);
-                  }}
-                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
-                    selectedFilter === 'prescription'
-                      ? 'bg-pink-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 hover:bg-pink-50'
-                  }`}
-                >
-                  📋 Reports ({reportCount})
-                </button>
-              )}
-
-              {billCount > 0 && (
-                <button
-                  onClick={() => {
-                    setSelectedFilter('bill');
-                    setActiveMediaIndex(0);
-                  }}
-                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
-                    selectedFilter === 'bill'
-                      ? 'bg-pink-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 hover:bg-pink-50'
-                  }`}
-                >
-                  🧾 Bills ({billCount})
-                </button>
-              )}
-
-              {videoCount > 0 && (
-                <button
-                  onClick={() => {
-                    setSelectedFilter('video');
-                    setActiveMediaIndex(0);
-                  }}
-                  className={`px-2.5 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 ${
-                    selectedFilter === 'video'
-                      ? 'bg-pink-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 hover:bg-pink-50'
-                  }`}
-                >
-                  🎥 Videos ({videoCount})
-                </button>
-              )}
-            </div>
-          )}
+          {/* High-End Thumbnail Image & Video Viewer */}
+          <ThumbnailImageViewer
+            title={`${animal.name}'s Rescue Gallery`}
+            items={rawMediaList}
+            state={{ active: safeIndex }}
+            onSelect={(idx) => setActiveMediaIndex(idx)}
+            onZoom={() => setIsLightboxOpen(true)}
+            className="rounded-t-2xl sm:rounded-t-3xl rounded-b-none border-x-0 border-t-0"
+          />
 
           {/* Modal Details Content */}
           <div className="p-4 sm:p-8 flex-1 flex flex-col justify-between">
