@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Dog } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -28,9 +29,11 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen bg-[#fff0f5] flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-3xl p-8 text-center shadow-xl border border-pink-200">
-            <div className="text-4xl mb-3">🐶</div>
-            <h2 className="text-xl font-black text-slate-900 mb-2 font-display">
-              Oops! Something went slightly woof!
+            <div className="w-16 h-16 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mx-auto mb-3">
+              <Dog className="w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">
+              Something went slightly woof!
             </h2>
             <p className="text-slate-600 text-xs sm:text-sm mb-4 font-medium">
               We encountered a minor display hiccup. Click below to reload cleanly.

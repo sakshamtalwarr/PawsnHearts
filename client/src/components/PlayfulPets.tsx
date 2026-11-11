@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Heart, Sparkles } from 'lucide-react';
+import { Heart, Sparkles, Dog } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const PlayfulPets: React.FC = () => {
   const [petsCount, setPetsCount] = useState(0);
   const [isWagging, setIsWagging] = useState(false);
-  const [speech, setSpeech] = useState("Hi! Pet me! 🐾");
+  const [speech, setSpeech] = useState("Hi! Pet me!");
   const [showBubble, setShowBubble] = useState(false);
 
   const handlePet = () => {
@@ -15,11 +15,11 @@ export const PlayfulPets: React.FC = () => {
     setShowBubble(true);
 
     const happyQuotes = [
-      "Woof! Belly rub time! 🐶",
-      "Tail wagging intensifies! ❤️",
-      "Thank you for caring! ✨",
-      "Street dog approved love! 🌟",
-      "You're an animal superhero! 🦸‍♂️",
+      "Woof! Belly rub time!",
+      "Tail wagging intensifies!",
+      "Thank you for caring!",
+      "Street dog approved love!",
+      "You're an animal superhero!",
     ];
 
     setSpeech(happyQuotes[newCount % happyQuotes.length]);
@@ -96,12 +96,12 @@ export const PlayfulPets: React.FC = () => {
                 isWagging ? 'animate-wag-tail' : 'animate-wiggle-slow'
               }`}
             />
-            <span className="text-xl sm:text-2xl select-none">🐕</span>
+            <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
 
           {/* Hearts counter badge */}
           {petsCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
+            <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
               {petsCount}
             </span>
           )}
@@ -114,6 +114,6 @@ export const PlayfulPets: React.FC = () => {
 export const PetDivider: React.FC = () => (
   <div className="relative py-4 sm:py-6 flex items-center justify-center overflow-hidden pointer-events-none opacity-40">
     <div className="h-[1px] bg-gradient-to-r from-transparent via-pink-300 to-transparent w-full max-w-2xl" />
-    <span className="absolute bg-[#fff0f5] px-3 text-sm text-pink-400">🐾</span>
+    <Heart className="absolute bg-[#fff0f5] px-2.5 w-8 h-8 text-pink-300 fill-pink-200" />
   </div>
 );

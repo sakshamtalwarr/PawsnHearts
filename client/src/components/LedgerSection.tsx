@@ -10,6 +10,7 @@ import {
   X,
   Eye,
   ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 import { LedgerEntry } from '../types';
 import { ledgerApi } from '../api/client';
@@ -81,14 +82,15 @@ export const LedgerSection: React.FC = () => {
   return (
     <section id="ledger" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full overflow-hidden">
       <div className="text-center mb-8 sm:mb-12">
-        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           100% Financial Transparency
         </span>
-        <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-          Public Rescue Ledger 📜
+        <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight flex items-center justify-center gap-2">
+          <span>Public Rescue Ledger</span>
+          <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 inline shrink-0" />
         </h2>
-        <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto mt-2 font-medium px-2">
+        <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto mt-2 font-normal px-2">
           Every rupee received from community donors and every clinic veterinary surgery bill is publicly listed.
         </p>
       </div>
@@ -97,10 +99,10 @@ export const LedgerSection: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div className="bg-white/95 rounded-2xl p-4 sm:p-5 border border-pink-200/80 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider font-display">
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Verified Donations
             </span>
-            <div className="text-xl sm:text-2xl font-black text-emerald-600 font-display">
+            <div className="text-xl sm:text-2xl font-bold text-emerald-600">
               ₹{Number(summary?.total_verified_donations || 0).toLocaleString('en-IN')}
             </div>
           </div>
@@ -112,7 +114,7 @@ export const LedgerSection: React.FC = () => {
             <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider font-display">
               Pending Verification
             </span>
-            <div className="text-xl sm:text-2xl font-black text-amber-500 font-display">
+            <div className="text-xl sm:text-2xl font-bold text-amber-500">
               ₹{Number(summary?.total_pending_donations || 0).toLocaleString('en-IN')}
             </div>
           </div>
@@ -121,10 +123,10 @@ export const LedgerSection: React.FC = () => {
 
         <div className="bg-white/95 rounded-2xl p-4 sm:p-5 border border-pink-200/80 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider font-display">
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Medical & Food Expenses
             </span>
-            <div className="text-xl sm:text-2xl font-black text-rose-500 font-display">
+            <div className="text-xl sm:text-2xl font-bold text-rose-500">
               ₹{Number(summary?.total_expenses || 0).toLocaleString('en-IN')}
             </div>
           </div>
@@ -195,8 +197,9 @@ export const LedgerSection: React.FC = () => {
                       <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5 font-display">
                         <span>{row.donor_name}</span>
                         {isToday && (
-                          <span className="bg-pink-100 text-pink-700 text-[9px] font-black px-1.5 py-0.2 rounded-full">
-                            Today ✨
+                          <span className="bg-pink-100 text-pink-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5">
+                            <span>Today</span>
+                            <Sparkles className="w-2.5 h-2.5 text-pink-500" />
                           </span>
                         )}
                       </div>
@@ -211,7 +214,7 @@ export const LedgerSection: React.FC = () => {
 
                     <div className="text-right shrink-0">
                       <div
-                        className={`font-black font-display text-base ${
+                        className={`font-bold text-base ${
                           isExpense ? 'text-rose-600' : 'text-emerald-600'
                         }`}
                       >
@@ -303,8 +306,9 @@ export const LedgerSection: React.FC = () => {
                           })}
                         </span>
                         {isToday && (
-                          <span className="ml-2 bg-pink-100 text-pink-700 text-[10px] font-black px-2 py-0.5 rounded-full font-display">
-                            Today! ✨
+                          <span className="ml-2 bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                            <span>Today</span>
+                            <Sparkles className="w-2.5 h-2.5 text-pink-500" />
                           </span>
                         )}
                       </td>
@@ -319,7 +323,7 @@ export const LedgerSection: React.FC = () => {
                         )}
                       </td>
                       <td
-                        className={`py-4 px-6 text-right font-black whitespace-nowrap font-display ${
+                        className={`py-4 px-6 text-right font-bold whitespace-nowrap ${
                           isExpense ? 'text-rose-600' : 'text-emerald-600'
                         }`}
                       >

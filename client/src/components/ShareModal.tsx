@@ -21,12 +21,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({ animal, isOpen, onClose 
     : `${origin}`;
 
   const shareTitle = isPet && animal
-    ? `🐾 Help ${animal.name} - ${animal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'}`
-    : '🐾 Paws&Hearts - 100% Transparent Community Dog Rescue in Bengaluru';
+    ? `Help ${animal.name} - ${animal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'}`
+    : 'Paws&Hearts - 100% Transparent Community Dog Rescue in Bengaluru';
 
   const shareText = isPet && animal
-    ? `🐾 Help ${animal.name}! ${animal.short_desc || 'Fighting for recovery in Bengaluru.'} Please sponsor or share her rescue case: ${shareUrl}`
-    : `🐾 Check out Paws&Hearts! 100% transparent street dog rescue in Bengaluru. Every rupee accounted on the live public ledger: ${shareUrl}`;
+    ? `Help ${animal.name}! ${animal.short_desc || 'Fighting for recovery in Bengaluru.'} Please sponsor or share her rescue case: ${shareUrl}`
+    : `Check out Paws&Hearts! 100% transparent street dog rescue in Bengaluru. Every rupee accounted on the live public ledger: ${shareUrl}`;
 
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
@@ -74,8 +74,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({ animal, isOpen, onClose 
           <div className="w-14 h-14 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Share2 className="w-7 h-7" />
           </div>
-          <h3 className="text-xl font-black text-slate-900 font-display">
-            {isPet ? `Share ${animal?.name}'s Case 🐶` : 'Share Paws&Hearts 🐾'}
+          <h3 className="text-xl font-bold text-slate-900">
+            {isPet ? `Share ${animal?.name}'s Case` : 'Share Paws&Hearts'}
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xs mx-auto">
             {isPet

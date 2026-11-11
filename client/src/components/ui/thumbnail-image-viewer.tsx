@@ -270,20 +270,37 @@ export function ThumbnailImageViewer({
 
         {/* Floating Top Left: Category Badge & Index Indicator */}
         <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center gap-2 pointer-events-none">
-          <span className="px-2.5 py-1 rounded-full bg-slate-900/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold border border-white/10 shadow-lg flex items-center gap-1.5">
-            <span className="font-mono text-pink-300 font-black">
+          <span className="px-2.5 py-1 rounded-full bg-slate-900/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-semibold border border-white/10 shadow-lg flex items-center gap-1.5">
+            <span className="font-mono text-pink-300 font-bold">
               {String(activeIndex + 1).padStart(2, '0')} / {String(filteredList.length).padStart(2, '0')}
             </span>
-            <span className="border-l border-slate-700 pl-1.5 text-slate-200 uppercase tracking-wider text-[9px] sm:text-[10px]">
-              {currentItem?.media_type === 'xray'
-                ? '🩻 X-Ray'
-                : currentItem?.media_type === 'bill'
-                ? '🧾 Vet Bill'
-                : currentItem?.media_type === 'prescription'
-                ? '📋 Report'
-                : isVideo
-                ? '🎥 Video'
-                : '📸 Photo'}
+            <span className="border-l border-slate-700 pl-1.5 text-slate-200 uppercase tracking-wider text-[9px] sm:text-[10px] flex items-center gap-1">
+              {currentItem?.media_type === 'xray' ? (
+                <>
+                  <Activity className="w-3 h-3 text-pink-400" />
+                  <span>X-Ray</span>
+                </>
+              ) : currentItem?.media_type === 'bill' ? (
+                <>
+                  <FileSpreadsheet className="w-3 h-3 text-emerald-400" />
+                  <span>Vet Bill</span>
+                </>
+              ) : currentItem?.media_type === 'prescription' ? (
+                <>
+                  <FileCheck className="w-3 h-3 text-blue-400" />
+                  <span>Report</span>
+                </>
+              ) : isVideo ? (
+                <>
+                  <Film className="w-3 h-3 text-rose-400" />
+                  <span>Video</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="w-3 h-3 text-pink-400" />
+                  <span>Photo</span>
+                </>
+              )}
             </span>
           </span>
         </div>
@@ -365,13 +382,14 @@ export function ThumbnailImageViewer({
                 setSelectedCategory('photo');
                 handleSelect(0);
               }}
-              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === 'photo'
                   ? 'bg-pink-600 text-white shadow-md'
                 : 'bg-slate-800/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              📸 Photos ({photoCount})
+              <Camera className="w-3 h-3 text-pink-400" />
+              <span>Photos ({photoCount})</span>
             </button>
           )}
           {videoCount > 0 && (
@@ -381,13 +399,14 @@ export function ThumbnailImageViewer({
                 setSelectedCategory('video');
                 handleSelect(0);
               }}
-              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === 'video'
                   ? 'bg-pink-600 text-white shadow-md'
                 : 'bg-slate-800/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              🎥 Videos ({videoCount})
+              <Film className="w-3 h-3 text-rose-400" />
+              <span>Videos ({videoCount})</span>
             </button>
           )}
           {xrayCount > 0 && (
@@ -397,13 +416,14 @@ export function ThumbnailImageViewer({
                 setSelectedCategory('xray');
                 handleSelect(0);
               }}
-              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === 'xray'
                   ? 'bg-pink-600 text-white shadow-md'
                 : 'bg-slate-800/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              🩻 X-Rays ({xrayCount})
+              <Activity className="w-3 h-3 text-pink-400" />
+              <span>X-Rays ({xrayCount})</span>
             </button>
           )}
           {docCount > 0 && (
@@ -413,13 +433,14 @@ export function ThumbnailImageViewer({
                 setSelectedCategory('prescription');
                 handleSelect(0);
               }}
-              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === 'prescription'
                   ? 'bg-pink-600 text-white shadow-md'
                 : 'bg-slate-800/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              📋 Reports ({docCount})
+              <FileCheck className="w-3 h-3 text-blue-400" />
+              <span>Reports ({docCount})</span>
             </button>
           )}
           {billCount > 0 && (
@@ -429,13 +450,14 @@ export function ThumbnailImageViewer({
                 setSelectedCategory('bill');
                 handleSelect(0);
               }}
-              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === 'bill'
                   ? 'bg-pink-600 text-white shadow-md'
                 : 'bg-slate-800/90 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              🧾 Bills ({billCount})
+              <FileSpreadsheet className="w-3 h-3 text-emerald-400" />
+              <span>Bills ({billCount})</span>
             </button>
           )}
         </div>

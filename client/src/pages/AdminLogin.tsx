@@ -51,7 +51,7 @@ export const AdminLogin: React.FC = () => {
           <div className="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-4 shadow-inner">
             <Lock className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-black text-white">Rescue Admin Portal</h1>
+          <h1 className="text-2xl font-bold text-white">Rescue Admin Portal</h1>
           <p className="text-xs text-slate-400 mt-1">
             Sign in to manage rescue animals, upload media, and verify ledger donations.
           </p>
@@ -60,7 +60,7 @@ export const AdminLogin: React.FC = () => {
         {isWakingUp && (
           <div className="mb-5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
-            <span>🐾 Server is waking up from sleep. First login may take ~15s.</span>
+            <span>Server is waking up from sleep. First login may take ~15s.</span>
           </div>
         )}
 

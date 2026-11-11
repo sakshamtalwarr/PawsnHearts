@@ -449,8 +449,8 @@ export const AdminDashboard: React.FC = () => {
       {/* Top Bar */}
       <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center font-black">
-            🐾
+          <div className="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center">
+            <Dog className="w-5 h-5 text-pink-400" />
           </div>
           <div>
             <h1 className="text-base font-bold text-white leading-tight font-display">Paws&Hearts Manager</h1>
@@ -537,26 +537,26 @@ export const AdminDashboard: React.FC = () => {
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                <span className="text-xs text-slate-400 font-bold uppercase">Total Verified Funds</span>
-                <div className="text-2xl font-black text-emerald-400 mt-1 font-display">
+                <span className="text-xs text-slate-400 font-semibold uppercase">Total Verified Funds</span>
+                <div className="text-2xl font-bold text-emerald-400 mt-1">
                   ₹{(stats?.total_raised || 0).toLocaleString('en-IN')}
                 </div>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                <span className="text-xs text-slate-400 font-bold uppercase">Vet Clinic Expenses</span>
-                <div className="text-2xl font-black text-rose-400 mt-1 font-display">
+                <span className="text-xs text-slate-400 font-semibold uppercase">Vet Clinic Expenses</span>
+                <div className="text-2xl font-bold text-rose-400 mt-1">
                   ₹{(stats?.total_expenses || 0).toLocaleString('en-IN')}
                 </div>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                <span className="text-xs text-slate-400 font-bold uppercase">Critical Treatments</span>
-                <div className="text-2xl font-black text-amber-400 mt-1 font-display">
+                <span className="text-xs text-slate-400 font-semibold uppercase">Critical Treatments</span>
+                <div className="text-2xl font-bold text-amber-400 mt-1">
                   {stats?.active_treatments || 0}
                 </div>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                <span className="text-xs text-slate-400 font-bold uppercase">Adopted / Rehomed</span>
-                <div className="text-2xl font-black text-pink-400 mt-1 font-display">
+                <span className="text-xs text-slate-400 font-semibold uppercase">Adopted / Rehomed</span>
+                <div className="text-2xl font-bold text-pink-400 mt-1">
                   {stats?.animals_adopted || 0}
                 </div>
               </div>
@@ -583,7 +583,7 @@ export const AdminDashboard: React.FC = () => {
                     setActiveTab('ledger');
                     setLedgerFilter('pending');
                   }}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl font-display transition-all"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl transition-all"
                 >
                   Review Pending Now →
                 </button>
@@ -626,8 +626,8 @@ export const AdminDashboard: React.FC = () => {
                       {a.status.replace('_', ' ').toUpperCase()}
                     </span>
                     {a.media && a.media.length > 0 && (
-                      <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-pink-300">
-                        📁 {a.media.length} Gallery Records
+                      <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-900/80 text-pink-300">
+                        {a.media.length} Records
                       </span>
                     )}
                   </div>
@@ -1251,11 +1251,11 @@ export const AdminDashboard: React.FC = () => {
                           }
                           className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs font-bold"
                         >
-                          <option value="photo">📸 Photo</option>
-                          <option value="xray">🩻 X-Ray Scan</option>
-                          <option value="prescription">📋 Doctor Report</option>
-                          <option value="bill">🧾 Clinic Bill</option>
-                          <option value="video">🎥 Recovery Video</option>
+                          <option value="photo">Photo</option>
+                          <option value="xray">X-Ray Scan</option>
+                          <option value="prescription">Doctor Report</option>
+                          <option value="bill">Clinic Bill</option>
+                          <option value="video">Recovery Video</option>
                         </select>
 
                         {/* Caption Input */}

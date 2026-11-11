@@ -11,7 +11,7 @@ export const INITIAL_ANIMALS: Animal[] = [
       "Indie"
     ],
     "short_desc": "Meet Dug-Dug ",
-    "full_story": "I found him on my way home from the office. I saw him on the road and gave him some doggy biscuits. Instead of eating them, he started playing with them 😂. After some time, I found out where he lived and went to his home, but his owner refused to take him back. They had left him on the road because he barks a lot.\n\nA few days later, I remembered seeing some puppies near my home, so I thought maybe he had come from there. I went there and searched but couldn’t find any of them.\n\nI was going to leave him on the road with some other friendly dogs that I know, but nearby, a security guard came and said, “He’s a boy, I’ll keep him.” After verifying everything and making sure he was actually going to take care of him, we bought him a belt for the security guard to keep him safely.\n\nAnd finally, he took him home. ❤️",
+    "full_story": "I found him on my way home from the office. I saw him on the road and gave him some doggy biscuits. Instead of eating them, he started playing with them . After some time, I found out where he lived and went to his home, but his owner refused to take him back. They had left him on the road because he barks a lot.\n\nA few days later, I remembered seeing some puppies near my home, so I thought maybe he had come from there. I went there and searched but couldn’t find any of them.\n\nI was going to leave him on the road with some other friendly dogs that I know, but nearby, a security guard came and said, “He’s a boy, I’ll keep him.” After verifying everything and making sure he was actually going to take care of him, we bought him a belt for the security guard to keep him safely.\n\nAnd finally, he took him home. ",
     "medical_details": "He's Vaccinated",
     "funds_needed": "0.00",
     "funds_raised": "0.00",
@@ -193,7 +193,7 @@ export const INITIAL_ANIMALS: Animal[] = [
     "category": "adoption",
     "status": "adopted",
     "tags": [
-      "Adopted ❤️",
+      "Adopted",
       "9 Months Old",
       "Indie Puppy"
     ],
@@ -226,7 +226,7 @@ export const INITIAL_ANIMALS: Animal[] = [
     "category": "adoption",
     "status": "adopted",
     "tags": [
-      "Adopted ❤️",
+      "Adopted",
       "Kumhara Park Rescue",
       "Sewer Survivor Pups"
     ],
@@ -259,7 +259,7 @@ export const INITIAL_ANIMALS: Animal[] = [
     "category": "treatment",
     "status": "recovered",
     "tags": [
-      "Treated & Recovered ❤️",
+      "Treated & Recovered",
       "Broken Leg Healed",
       "Hit & Run Survivor"
     ],
@@ -292,7 +292,7 @@ export const INITIAL_ANIMALS: Animal[] = [
     "category": "treatment",
     "status": "recovered",
     "tags": [
-      "Treated & Recovered ❤️",
+      "Treated & Recovered",
       "Wound Healed",
       "Puppy Survivor"
     ],
@@ -325,7 +325,7 @@ export const INITIAL_ANIMALS: Animal[] = [
     "category": "treatment",
     "status": "recovered",
     "tags": [
-      "Treated & Recovered ❤️",
+      "Treated & Recovered",
       "Drip & Bandages",
       "Fully Healed"
     ],
@@ -623,6 +623,6 @@ export const INITIAL_SETTINGS: SiteSettings = {
   payee_name: "PawsAndHearts",
   contact_phone: "+91 7217739614",
   contact_location: "BLR, India",
-  emergency_banner: "🚨 Emergency Hip Surgery Fund for TinTin Active Now!",
+  emergency_banner: "Emergency Hip Surgery Fund for TinTin Active Now!",
   enable_donations: true,
 };

@@ -54,8 +54,8 @@ export const BackendStatusBanner: React.FC = () => {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
             </span>
             <div className="min-w-0">
-              <p className="font-bold text-white font-display truncate">
-                🐾 Backend waking up, please wait...
+              <p className="font-semibold text-white truncate">
+                Backend waking up, please wait...
               </p>
               <p className="text-[11px] text-slate-300 font-medium truncate">
                 Free-tier server is spinning up. Actions will sync automatically in ~20-30s.

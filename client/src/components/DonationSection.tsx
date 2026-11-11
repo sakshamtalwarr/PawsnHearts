@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   X,
   Building,
+  Dog,
 } from 'lucide-react';
 import { ledgerApi, uploadApi } from '../api/client';
 import { Animal } from '../types';
@@ -149,14 +150,15 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
   return (
     <section id="donate" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-5xl mx-auto relative z-10 w-full overflow-hidden">
       <div className="text-center mb-8 sm:mb-12">
-        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5">
           <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
           Transparent Community Rescue
         </span>
-        <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-          Help Fund Vital Surgeries & Food 💖
+        <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight flex items-center justify-center gap-2">
+          <span>Help Fund Vital Surgeries & Food</span>
+          <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 fill-pink-500 shrink-0 inline" />
         </h2>
-        <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto mt-2 font-medium px-2">
+        <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto mt-2 font-normal px-2">
           Every contribution goes 100% towards emergency veterinary medicine, foster nutrition, and rescue surgeries. All donations are reviewed and published to the public ledger.
         </p>
       </div>
@@ -165,12 +167,14 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
       {activeAnimalName && (
         <div className="mb-6 sm:mb-8 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-bold flex items-center justify-between shadow-lg shadow-pink-500/25">
           <div className="flex items-center gap-2.5">
-            <span className="text-xl sm:text-2xl animate-bounce shrink-0">🐶</span>
+            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+              <Dog className="w-5 h-5 text-white" />
+            </div>
             <div>
               <div className="text-[10px] sm:text-xs uppercase tracking-wider font-extrabold text-pink-100">
                 Direct Case Sponsorship
               </div>
-              <div className="text-sm sm:text-base font-display">
+              <div className="text-sm sm:text-base font-semibold">
                 Sponsoring surgery for <span className="underline decoration-wavy underline-offset-4">{activeAnimalName}</span>
               </div>
             </div>
@@ -178,7 +182,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
           {onClearActiveAnimal && (
             <button
               onClick={onClearActiveAnimal}
-              className="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition-colors shrink-0 ml-2"
+              className="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-semibold transition-colors shrink-0 ml-2"
             >
               Clear
             </button>
@@ -192,8 +196,9 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
             <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9" />
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-display mb-2">
-            Pledge Received! Thank You, {lastSubmittedInfo.donor}! 🎉
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
+            <span>Pledge Received! Thank You, {lastSubmittedInfo.donor}!</span>
+            <Sparkles className="w-5 h-5 text-amber-500" />
           </h3>
           <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 font-medium">
             We recorded your payment pledge of{' '}
@@ -246,7 +251,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
                     key={preset}
                     type="button"
                     onClick={() => setAmount(preset)}
-                    className={`py-2.5 sm:py-3 rounded-2xl font-black text-xs sm:text-sm transition-all font-display active:scale-95 ${
+                    className={`py-2.5 sm:py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all active:scale-95 ${
                       Number(amount) === preset
                         ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25 scale-[1.02]'
                         : 'bg-pink-50/80 text-slate-700 hover:bg-pink-100 border border-pink-100'
@@ -259,7 +264,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
 
               {/* Custom amount input */}
               <div className="relative mb-5">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-black text-base sm:text-lg">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base sm:text-lg">
                   ₹
                 </span>
                 <input
@@ -268,7 +273,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Custom amount"
-                  className="w-full pl-8 pr-4 py-2.5 sm:py-3 rounded-2xl border border-pink-200 bg-pink-50/40 focus:bg-white text-slate-900 font-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all font-display"
+                  className="w-full pl-8 pr-4 py-2.5 sm:py-3 rounded-2xl border border-pink-200 bg-pink-50/40 focus:bg-white text-slate-900 font-bold text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all"
                 />
               </div>
 
@@ -318,7 +323,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
                   <div className="p-3 sm:p-4 rounded-2xl bg-pink-50/70 border border-pink-100 flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <div className="text-[10px] sm:text-xs text-slate-500 font-medium">Official UPI VPA:</div>
-                      <div className="text-xs sm:text-base font-black text-slate-900 font-mono truncate">
+                      <div className="text-xs sm:text-base font-bold text-slate-900 font-mono truncate">
                         {upiId}
                       </div>
                     </div>
@@ -405,7 +410,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
             <form onSubmit={handlePledgeSubmit} className="space-y-3.5">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Sparkles className="w-4 h-4 text-pink-500 shrink-0" />
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 font-display">
+                <h4 className="text-xs sm:text-sm font-bold text-slate-900">
                   Notify Team & Verify Donation
                 </h4>
               </div>
@@ -469,7 +474,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
                       {isUploadingReceipt
                         ? 'Uploading...'
                         : receiptUrl
-                        ? 'Screenshot Attached ✓'
+                        ? 'Screenshot Attached'
                         : 'Upload Screenshot'}
                     </span>
                     <input
@@ -500,7 +505,7 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder={
                     activeAnimalName
-                      ? `Get well soon ${activeAnimalName}! ❤️`
+                      ? `Get well soon ${activeAnimalName}!`
                       : 'Love and blessings for the street pups!'
                   }
                   className="w-full px-3 py-2 bg-white rounded-xl border border-pink-200 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-pink-400 font-medium"

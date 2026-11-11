@@ -51,8 +51,9 @@ export const SuccessStories: React.FC<SuccessStoriesProps> = ({ animals, onSelec
           <Sparkles className="w-3.5 h-3.5 text-pink-500 fill-pink-500" />
           Triumphs of Love & Care
         </span>
-        <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-          Success Stories & Happy Tails 🐾
+        <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight flex items-center justify-center gap-2">
+          <span>Success Stories & Happy Tails</span>
+          <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 inline shrink-0" />
         </h2>
         <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto mt-1.5 font-medium px-2">
           These fighters survived highway collisions, trauma, and abandonment. Today, they are healthy, healed, and thriving.

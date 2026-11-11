@@ -11,7 +11,7 @@ import { Footer } from '../components/Footer';
 import { PlayfulPets, PetDivider } from '../components/PlayfulPets';
 import { Animal, Stats, SiteSettings } from '../types';
 import { animalsApi, statsApi } from '../api/client';
-import { Heart, Activity, Wifi, Camera, X } from 'lucide-react';
+import { Heart, Activity, Wifi, Camera, X, Sparkles } from 'lucide-react';
 import ThumbnailImageViewer from '../components/ui/thumbnail-image-viewer';
 import { INITIAL_ANIMALS, INITIAL_STATS, INITIAL_SETTINGS } from '../data/initialData';
 
@@ -46,11 +46,11 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     if (selectedAnimal) {
-      document.title = `🐾 Help ${selectedAnimal.name} - ${
+      document.title = `Help ${selectedAnimal.name} - ${
         selectedAnimal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'
       } | Paws&Hearts`;
     } else {
-      document.title = '🐾 Paws&Hearts Bengaluru - Giving Every Street Dog A Second Chance';
+      document.title = 'Paws&Hearts Bengaluru - Giving Every Street Dog A Second Chance';
     }
   }, [selectedAnimal]);
 
@@ -229,18 +229,20 @@ export const HomePage: React.FC = () => {
               <Activity className="w-3.5 h-3.5 text-rose-500" />
               Critical Roadside Rescues
             </span>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-              Urgent Medical Cases 🚨
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Urgent Medical Cases</span>
+              <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500 inline shrink-0" />
             </h2>
-            <p className="text-slate-600 text-xs sm:text-base max-w-lg mt-1.5 font-medium">
+            <p className="text-slate-600 text-xs sm:text-base max-w-lg mt-1.5 font-normal">
               Survivors battling orthopedic trauma, maggot wounds, and illnesses. They rely on emergency treatment sponsorships.
             </p>
           </div>
         </div>
 
         {treatmentAnimals.length === 0 ? (
-          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base">
-            All previous critical trauma rescues have been fully treated and rehabilitated! 🎉
+          <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base flex items-center justify-center gap-2">
+            <span>All previous critical trauma rescues have been fully treated and rehabilitated!</span>
+            <Sparkles className="w-4 h-4 text-amber-500" />
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -264,14 +266,15 @@ export const HomePage: React.FC = () => {
           <section id="gallery" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5">
                   <Camera className="w-3.5 h-3.5 text-pink-600" />
                   Live Rescue Timeline
                 </span>
-                <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-                  Rescue Photo & Video Gallery 📸
+                <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Rescue Photo & Video Gallery</span>
+                  <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 inline shrink-0" />
                 </h2>
-                <p className="text-slate-600 text-xs sm:text-base max-w-xl mt-1.5 font-medium">
+                <p className="text-slate-600 text-xs sm:text-base max-w-xl mt-1.5 font-normal">
                   Watch recovery videos, veterinary surgery updates, clinic bills, and daily rehabilitation progress directly from the street.
                 </p>
               </div>
@@ -292,14 +295,15 @@ export const HomePage: React.FC = () => {
       <section id="adopt" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5">
               <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
               Forever Companions
             </span>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-              Adopt, Don't Shop 🏡
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Adopt, Don't Shop</span>
+              <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 inline shrink-0" />
             </h2>
-            <p className="text-slate-600 text-xs sm:text-base max-w-lg mt-1.5 font-medium">
+            <p className="text-slate-600 text-xs sm:text-base max-w-lg mt-1.5 font-normal">
               Healthy, fully vaccinated, and affectionate dogs waiting patiently for warm loving homes.
             </p>
           </div>
@@ -307,7 +311,7 @@ export const HomePage: React.FC = () => {
 
         {adoptionAnimals.length === 0 ? (
           <div className="bg-white/85 backdrop-blur-md rounded-3xl p-8 sm:p-12 text-center text-slate-600 font-semibold border border-pink-200/80 shadow-sm text-sm sm:text-base">
-            All previously rescued puppies have found loving foster or forever homes! Meet them in Success Stories below. 🐶
+            All previously rescued puppies have found loving foster or forever homes! Meet them in Success Stories below.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">

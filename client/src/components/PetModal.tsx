@@ -188,16 +188,16 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               {/* Title & Tags */}
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2 font-display">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
                     {animal.name}
                     {isCompleted && <Sparkles className="w-5 h-5 text-pink-500" />}
                   </h2>
-                  <p className="text-xs sm:text-sm font-bold text-pink-600 mt-0.5 font-display">
+                  <p className="text-xs sm:text-sm font-semibold text-pink-600 mt-0.5">
                     Category: {animal.category === 'adoption' ? 'Adoption' : 'Emergency Medical Rescue'}
                   </p>
                 </div>
 
-                <span className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-black bg-pink-100 text-pink-800 border border-pink-200">
+                <span className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200">
                   {safeStatus.replace('_', ' ').toUpperCase()}
                 </span>
               </div>
@@ -208,7 +208,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                   {safeTags.map((t, idx) => (
                     <span
                       key={idx}
-                      className="bg-pink-50 text-pink-700 text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full border border-pink-100"
+                      className="bg-pink-50 text-pink-700 text-[10px] sm:text-xs font-medium px-2.5 py-0.5 rounded-full border border-pink-100"
                     >
                       {t}
                     </span>
@@ -219,9 +219,9 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
               {/* Medical Funding Meter */}
               {fundsNeeded > 0 && (
                 <div className="bg-pink-50/80 border border-pink-200/80 rounded-2xl p-4 sm:p-5 mb-5">
-                  <div className="flex justify-between items-center text-xs sm:text-sm font-bold mb-1.5">
-                    <span className="text-slate-700 font-display">Treatment Funding Progress</span>
-                    <span className="text-pink-600 font-black font-display">
+                  <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1.5">
+                    <span className="text-slate-700">Treatment Funding Progress</span>
+                    <span className="text-pink-600 font-bold">
                       ₹{fundsRaised.toLocaleString('en-IN')} of ₹{fundsNeeded.toLocaleString('en-IN')} ({fundPercent}%)
                     </span>
                   </div>
