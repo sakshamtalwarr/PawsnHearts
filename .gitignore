@@ -4,6 +4,7 @@ node_modules/
 
 # Production build outputs
 client/dist/
+server/dist/
 .vite/
 */.vite/
 

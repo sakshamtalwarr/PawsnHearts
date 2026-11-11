@@ -7,8 +7,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
-const DEFAULT_NEON_POOLED_URL = 'postgresql://neondb_owner:REDACTED_POSTGRES_PASSWORD@ep-divine-union-beznv92r-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL || DEFAULT_NEON_POOLED_URL;
+const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL;
 const isPlaceholderUrl = !connectionString || connectionString.includes('YOUR_PASSWORD') || connectionString.includes('ep-random-name');
 
 if (isPlaceholderUrl) {

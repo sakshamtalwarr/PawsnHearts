@@ -10,10 +10,6 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
 // 1. Cloudinary (100% Free, NO Credit Card Required)
-const DEFAULT_CLOUDINARY_CLOUD_NAME = 'dp2kretaw';
-const DEFAULT_CLOUDINARY_API_KEY = '168773142822859';
-const DEFAULT_CLOUDINARY_API_SECRET = 'REDACTED_CLOUDINARY_SECRET';
-
 let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || '').trim();
 let apiKey = (process.env.CLOUDINARY_API_KEY || '').trim();
 let apiSecret = (process.env.CLOUDINARY_API_SECRET || '').trim();
@@ -30,19 +26,17 @@ if (cloudinaryUrl && cloudinaryUrl.includes('@')) {
   }
 }
 
-cloudName = cloudName || DEFAULT_CLOUDINARY_CLOUD_NAME;
-apiKey = apiKey || DEFAULT_CLOUDINARY_API_KEY;
-apiSecret = apiSecret || DEFAULT_CLOUDINARY_API_SECRET;
-
-cloudinary.config({
-  cloud_name: cloudName,
-  api_key: apiKey,
-  api_secret: apiSecret,
-  secure: true,
-});
-
-const isCloudinaryConfigured = true;
-console.log(`✅ Cloudinary Storage initialized (cloud_name: ${cloudName})`);
+let isCloudinaryConfigured = false;
+if (cloudName && apiKey && apiSecret) {
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true,
+  });
+  isCloudinaryConfigured = true;
+  console.log(`✅ Cloudinary Storage initialized (cloud_name: ${cloudName})`);
+}
 
 // 2. Cloudflare R2 (Optional if user has card/PayPal)
 const r2AccountId = process.env.R2_ACCOUNT_ID;
