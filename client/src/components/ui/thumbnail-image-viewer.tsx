@@ -174,13 +174,15 @@ export function ThumbnailImageViewer({
     handleSelect(activeIndex < filteredList.length - 1 ? activeIndex + 1 : 0);
   }, [activeIndex, filteredList.length, handleSelect]);
 
-  // Center active thumbnail smoothly into view
+  // Center active thumbnail smoothly into view inside the strip only
   useEffect(() => {
     if (activeThumbnailRef.current && stripScrollRef.current) {
-      activeThumbnailRef.current.scrollIntoView({
+      const strip = stripScrollRef.current;
+      const thumb = activeThumbnailRef.current;
+      const targetLeft = thumb.offsetLeft - strip.offsetWidth / 2 + thumb.offsetWidth / 2;
+      strip.scrollTo({
+        left: Math.max(0, targetLeft),
         behavior: seeking ? 'auto' : 'smooth',
-        inline: 'center',
-        block: 'nearest',
       });
     }
   }, [activeIndex, seeking]);

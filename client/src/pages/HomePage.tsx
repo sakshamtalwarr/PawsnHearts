@@ -11,7 +11,8 @@ import { Footer } from '../components/Footer';
 import { PlayfulPets, PetDivider } from '../components/PlayfulPets';
 import { Animal, Stats, SiteSettings } from '../types';
 import { animalsApi, statsApi } from '../api/client';
-import { Heart, Activity, Wifi } from 'lucide-react';
+import { Heart, Activity, Wifi, Camera, X } from 'lucide-react';
+import ThumbnailImageViewer from '../components/ui/thumbnail-image-viewer';
 import { INITIAL_ANIMALS, INITIAL_STATS, INITIAL_SETTINGS } from '../data/initialData';
 
 const getCachedData = <T,>(key: string, fallback: T): T => {
@@ -41,6 +42,7 @@ export const HomePage: React.FC = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [activeAnimalForDonation, setActiveAnimalForDonation] = useState<string | null>(null);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
+  const [homepageLightboxUrl, setHomepageLightboxUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedAnimal) {
@@ -153,6 +155,52 @@ export const HomePage: React.FC = () => {
     (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
   );
 
+  // Aggregated rescue media items for the live homepage gallery
+  const allGalleryMedia = React.useMemo(() => {
+    const list: any[] = [];
+    animals.forEach((animal) => {
+      let items: any[] = [];
+      if (Array.isArray(animal.media)) {
+        items = animal.media;
+      } else if (typeof animal.media === 'string') {
+        try {
+          items = JSON.parse(animal.media);
+        } catch {
+          items = [];
+        }
+      }
+
+      if (Array.isArray(items)) {
+        items.forEach((m, idx) => {
+          if (!m) return;
+          const url = typeof m === 'string' ? m : m.url;
+          if (!url) return;
+          const isVid = m.media_type === 'video' || url.endsWith('.mp4') || url.includes('/video/');
+          list.push({
+            id: m.id || `${animal.id}-${idx}`,
+            url,
+            src: url,
+            media_type: isVid ? 'video' : m.media_type || 'photo',
+            caption: m.caption ? `${animal.name}: ${m.caption}` : `${animal.name}'s recovery update`,
+          });
+        });
+      }
+
+      if (animal.hero_image) {
+        list.push({
+          id: `${animal.id}-hero`,
+          url: animal.hero_image,
+          src: animal.hero_image,
+          media_type: 'photo',
+          caption: `${animal.name} - Profile Cover Photo`,
+        });
+      }
+    });
+
+    // Videos and medical cases first
+    return list.sort((a, b) => (a.media_type === 'video' ? -1 : 1));
+  }, [animals]);
+
   const featuredAnimal = urgentCases[0] || activeTreatmentCases[0] || newestCases[0] || null;
 
   return (
@@ -210,7 +258,37 @@ export const HomePage: React.FC = () => {
 
       <PetDivider />
 
-      {/* 2. Adoption Section */}
+      {/* 2. Live Rescue Media & Video Gallery */}
+      {allGalleryMedia.length > 0 && (
+        <>
+          <section id="gallery" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-pink-100 text-pink-800 border border-pink-200 mb-2.5 font-display">
+                  <Camera className="w-3.5 h-3.5 text-pink-600" />
+                  Live Rescue Timeline
+                </span>
+                <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
+                  Rescue Photo & Video Gallery 📸
+                </h2>
+                <p className="text-slate-600 text-xs sm:text-base max-w-xl mt-1.5 font-medium">
+                  Watch recovery videos, veterinary surgery updates, clinic bills, and daily rehabilitation progress directly from the street.
+                </p>
+              </div>
+            </div>
+
+            <ThumbnailImageViewer
+              title="Paws&Hearts Live Rescue Timeline"
+              items={allGalleryMedia}
+              onZoom={(url) => setHomepageLightboxUrl(url)}
+            />
+          </section>
+
+          <PetDivider />
+        </>
+      )}
+
+      {/* 3. Adoption Section */}
       <section id="adopt" className="py-12 sm:py-20 px-3.5 sm:px-4 max-w-6xl mx-auto w-full relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
           <div>
@@ -271,6 +349,45 @@ export const HomePage: React.FC = () => {
           onClose={() => setSelectedAnimal(null)}
           onDonateForAnimal={handleDonateForAnimal}
         />
+      )}
+
+      {/* Homepage Fullscreen Media Lightbox */}
+      {homepageLightboxUrl && (
+        <div
+          className="fixed inset-0 z-60 bg-black/95 flex flex-col items-center justify-center p-3 sm:p-6 backdrop-blur-md animate-fade-in"
+          onClick={() => setHomepageLightboxUrl(null)}
+        >
+          <div className="absolute top-4 right-4 z-40">
+            <button
+              type="button"
+              onClick={() => setHomepageLightboxUrl(null)}
+              className="p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-all shadow-lg cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div
+            className="relative max-w-full max-h-[85vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {homepageLightboxUrl.endsWith('.mp4') || homepageLightboxUrl.includes('/video/') ? (
+              <video
+                src={homepageLightboxUrl}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl bg-black"
+              />
+            ) : (
+              <img
+                src={homepageLightboxUrl}
+                alt="Inspection view"
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+              />
+            )}
+          </div>
+        </div>
       )}
 
       <Footer settings={settings} />

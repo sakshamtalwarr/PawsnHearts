@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, ShieldCheck, Menu, X, Lock, Share2, Dog, Activity, Award } from 'lucide-react';
+import { Heart, ShieldCheck, Menu, X, Lock, Share2, Dog, Activity, Award, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShareModal } from './ShareModal';
@@ -72,6 +72,12 @@ export const Navbar: React.FC = () => {
               className="px-3.5 py-1.5 rounded-full hover:bg-pink-50 hover:text-pink-600 transition-all font-display"
             >
               Medical Cases
+            </a>
+            <a
+              href="/#gallery"
+              className="px-3.5 py-1.5 rounded-full hover:bg-pink-50 hover:text-pink-600 transition-all font-display"
+            >
+              Gallery
             </a>
             <a
               href="/#success"
@@ -170,6 +176,14 @@ export const Navbar: React.FC = () => {
             >
               <Activity className="w-4 h-4 text-rose-500" />
               Urgent Medical Cases
+            </a>
+            <a
+              href="/#gallery"
+              onClick={() => setMobileOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-2.5 active:bg-pink-100"
+            >
+              <Camera className="w-4 h-4 text-pink-500" />
+              Rescue Photo & Video Gallery
             </a>
             <a
               href="/#success"

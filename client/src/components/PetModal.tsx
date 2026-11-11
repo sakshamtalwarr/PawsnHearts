@@ -172,8 +172,6 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
           <ThumbnailImageViewer
             title={`${animal.name}'s Rescue Gallery`}
             items={rawMediaList}
-            state={{ active: safeIndex }}
-            onSelect={(idx) => setActiveMediaIndex(idx)}
             onZoom={() => setIsLightboxOpen(true)}
             className="rounded-t-2xl sm:rounded-t-3xl rounded-b-none border-x-0 border-t-0"
           />
