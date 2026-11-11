@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Video, Sparkles, AlertCircle, Share2, Heart } from 'lucide-react';
+import { ArrowRight, Video, Sparkles, AlertCircle, Share2, Heart, Check, Activity } from 'lucide-react';
 import { Animal, formatMediaUrl } from '../types';
 import { ShareModal } from './ShareModal';
 
@@ -55,28 +55,31 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
           {/* Status Badge */}
           <div className="absolute top-2.5 right-2.5">
             {animal.status === 'urgent' && (
-              <span className="bg-rose-500 text-white text-[11px] sm:text-xs font-black px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1 animate-pulse">
+              <span className="bg-rose-500 text-white text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1 animate-pulse">
                 <AlertCircle className="w-3 h-3" /> Urgent
               </span>
             )}
             {animal.status === 'available' && animal.category === 'adoption' && (
-              <span className="bg-pink-500 text-white text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md">
-                Adopt Me ❤️
+              <span className="bg-pink-500 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1">
+                <span>Adopt Me</span>
+                <Heart className="w-3 h-3 fill-white" />
               </span>
             )}
             {animal.status === 'in_treatment' && (
-              <span className="bg-amber-500 text-white text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md">
-                In Treatment 🏥
+              <span className="bg-amber-500 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1">
+                <span>In Treatment</span>
+                <Activity className="w-3 h-3" />
               </span>
             )}
             {animal.status === 'recovered' && (
-              <span className="bg-emerald-500 text-white text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1">
+              <span className="bg-emerald-500 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> Recovered
               </span>
             )}
             {animal.status === 'adopted' && (
-              <span className="bg-indigo-600 text-white text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md">
-                Adopted 🏡
+              <span className="bg-indigo-600 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                <span>Adopted</span>
               </span>
             )}
           </div>
@@ -86,21 +89,21 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
         <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-2 mb-1">
-              <h3 className="text-lg sm:text-xl font-black text-slate-800 group-hover:text-pink-600 transition-colors font-display truncate">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800 group-hover:text-pink-600 transition-colors truncate">
                 {animal.name}
               </h3>
               {animal.category === 'adoption' ? (
-                <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-display shrink-0">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
                   Adoption
                 </span>
               ) : (
-                <span className="text-[10px] sm:text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full font-display shrink-0">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full shrink-0">
                   Medical Care
                 </span>
               )}
             </div>
 
-            <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 mb-3 font-medium leading-relaxed">
+            <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 mb-3 font-normal leading-relaxed">
               {animal.short_desc || 'Rescued dog receiving continuous rehabilitation and love.'}
             </p>
 
@@ -110,7 +113,7 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
                 {safeTags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
-                    className="bg-pink-50 text-pink-700 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border border-pink-100"
+                    className="bg-pink-50 text-pink-700 text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full border border-pink-100"
                   >
                     {tag}
                   </span>
@@ -123,9 +126,9 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
             {/* Medical Funding Meter (if applicable) */}
             {fundsNeeded > 0 && (
               <div className="mb-3.5 pt-2 border-t border-pink-100">
-                <div className="flex justify-between text-[11px] sm:text-xs font-bold mb-1">
+                <div className="flex justify-between text-[11px] sm:text-xs font-semibold mb-1">
                   <span className="text-slate-500">Goal</span>
-                  <span className="text-pink-600 font-display">
+                  <span className="text-pink-600 font-bold">
                     ₹{fundsRaised.toLocaleString('en-IN')} / ₹{fundsNeeded.toLocaleString('en-IN')} ({fundPercent}%)
                   </span>
                 </div>
@@ -140,7 +143,7 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
 
             {/* Bottom Actions: View details + Share & Sponsor buttons */}
             <div className="pt-2 flex items-center justify-between gap-1.5 border-t border-slate-50">
-              <div className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-pink-600 group-hover:text-pink-700 font-display shrink-0">
+              <div className="flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-pink-600 group-hover:text-pink-700 shrink-0">
                 <span>View Story</span>
                 <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
               </div>
@@ -153,11 +156,11 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
                     e.stopPropagation();
                     setIsShareOpen(true);
                   }}
-                  title="Share profile to WhatsApp or social media"
-                  className="px-2.5 py-1 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 text-[11px] sm:text-xs font-bold flex items-center gap-1 border border-pink-200/80 transition-all font-display hover:scale-105 active:scale-95"
+                  title="Share profile"
+                  className="px-2.5 py-1 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 text-[11px] sm:text-xs font-semibold flex items-center gap-1 border border-pink-200/80 transition-all hover:scale-105 active:scale-95"
                 >
                   <Share2 className="w-3 h-3" />
-                  <span>Share 📢</span>
+                  <span>Share</span>
                 </button>
 
                 {fundsNeeded > 0 && onDonate && (

@@ -209,22 +209,22 @@ export function ThumbnailImageViewer({
   const hasMultipleCategories = (photoCount > 0 && (videoCount > 0 || xrayCount > 0 || billCount > 0 || docCount > 0));
 
   return (
-    <div className={`w-full flex flex-col bg-slate-950 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 font-sans ${className}`}>
+    <div className={`w-full shrink-0 flex flex-col bg-slate-950 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 font-sans ${className}`}>
       {/* Optional Top Header Bar */}
       {title && (
-        <div className="px-4 py-3 sm:px-6 sm:py-3.5 bg-slate-900/90 border-b border-slate-800/80 flex items-center justify-between">
+        <div className="shrink-0 px-4 py-3 sm:px-6 sm:py-3.5 bg-slate-900/90 border-b border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
             <h3 className="text-xs sm:text-sm font-bold text-white tracking-wide font-display">{title}</h3>
           </div>
-          <div className="text-[11px] font-mono text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700/60">
+          <div className="text-[11px] font-mono text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700/60 mr-20 sm:mr-24">
             <span className="text-pink-400 font-bold">{String(activeIndex + 1).padStart(2, '0')}</span> / {String(filteredList.length).padStart(2, '0')}
           </div>
         </div>
       )}
 
-      {/* Main Staging Display */}
-      <div className={`relative ${aspectRatio} w-full h-[220px] xs:h-[260px] sm:h-[320px] md:h-[380px] max-h-[50vh] bg-slate-950 overflow-hidden flex items-center justify-center select-none`}>
+      {/* Main Staging Display - Hardened against flexbox squashing with explicit min-height */}
+      <div className={`relative ${aspectRatio} w-full shrink-0 min-h-[300px] sm:min-h-[380px] md:min-h-[440px] bg-slate-950 overflow-hidden flex items-center justify-center select-none`}>
         {/* Ambient Blurred Background for Cinematic Aspect Fill */}
         {!isVideo && currentUrl && (
           <div
@@ -343,7 +343,7 @@ export function ThumbnailImageViewer({
 
       {/* Category Tabs (Shown if multiple media types exist) */}
       {showCategoryTabs && hasMultipleCategories && (
-        <div className="bg-slate-900/90 border-t border-slate-800/80 px-3.5 py-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px] font-bold font-display">
+        <div className="shrink-0 bg-slate-900/90 border-t border-slate-800/80 px-3.5 py-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px] font-bold font-display">
           <button
             type="button"
             onClick={() => {
@@ -445,7 +445,7 @@ export function ThumbnailImageViewer({
       {filteredList.length > 1 && (
         <div
           ref={stripScrollRef}
-          className="bg-slate-900 border-t border-slate-800/90 px-3 py-2.5 sm:px-4 sm:py-3 flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none"
+          className="shrink-0 bg-slate-900 border-t border-slate-800/90 px-3 py-2.5 sm:px-4 sm:py-3 flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none min-h-[72px] sm:min-h-[82px]"
         >
           {filteredList.map((item, idx) => {
             const isActive = activeIndex === idx;
@@ -459,7 +459,7 @@ export function ThumbnailImageViewer({
                 ref={isActive ? activeThumbnailRef : null}
                 type="button"
                 onClick={() => handleSelect(idx)}
-                className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer bg-slate-950 focus:outline-none ${
+                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer bg-slate-950 focus:outline-none ${
                   isActive
                     ? 'border-pink-500 scale-105 shadow-xl shadow-pink-500/40 ring-2 ring-pink-400/50 z-10'
                     : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'

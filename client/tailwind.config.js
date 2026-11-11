@@ -30,10 +30,10 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Nunito', 'sans-serif'],
-        display: ['Fredoka', 'sans-serif'],
-        handwriting: ['Caveat', 'Dancing Script', 'cursive'],
-        script: ['Dancing Script', 'cursive'],
+        sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        handwriting: ['Caveat', 'cursive'],
+        script: ['Plus Jakarta Sans', 'sans-serif'],
       },
       boxShadow: {
         'glass': '0 15px 35px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8)',

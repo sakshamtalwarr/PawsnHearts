@@ -179,11 +179,11 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
             items={rawMediaList}
             onZoom={() => setIsLightboxOpen(true)}
             aspectRatio="aspect-[16/10] sm:aspect-[16/9]"
-            className="rounded-t-2xl sm:rounded-t-3xl rounded-b-none border-x-0 border-t-0"
+            className="shrink-0 rounded-t-2xl sm:rounded-t-3xl rounded-b-none border-x-0 border-t-0"
           />
 
           {/* Modal Details Content */}
-          <div className="p-4 sm:p-8 flex-1 flex flex-col justify-between">
+          <div className="p-4 sm:p-8 shrink-0 flex flex-col justify-between">
             <div>
               {/* Title & Tags */}
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
