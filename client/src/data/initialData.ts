@@ -2,6 +2,55 @@ import { Animal, LedgerEntry, Stats, SiteSettings } from "../types";
 
 export const INITIAL_ANIMALS: Animal[] = [
   {
+    "id": "5e0d84ab-1628-4986-add9-bf6074fc060f",
+    "name": "Dug-Dug",
+    "slug": "dug-dug",
+    "category": "adoption",
+    "status": "adopted",
+    "tags": [
+      "Indie"
+    ],
+    "short_desc": "Meet Dug-Dug ",
+    "full_story": "I found him on my way home from the office. I saw him on the road and gave him some doggy biscuits. Instead of eating them, he started playing with them 😂. After some time, I found out where he lived and went to his home, but his owner refused to take him back. They had left him on the road because he barks a lot.\n\nA few days later, I remembered seeing some puppies near my home, so I thought maybe he had come from there. I went there and searched but couldn’t find any of them.\n\nI was going to leave him on the road with some other friendly dogs that I know, but nearby, a security guard came and said, “He’s a boy, I’ll keep him.” After verifying everything and making sure he was actually going to take care of him, we bought him a belt for the security guard to keep him safely.\n\nAnd finally, he took him home. ❤️",
+    "medical_details": "He's Vaccinated",
+    "funds_needed": "0.00",
+    "funds_raised": "0.00",
+    "hero_image": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794323050/pawsnhearts/animals/pt4cmfkykc39n8nlpj8x.jpg",
+    "is_featured": false,
+    "sort_order": 0,
+    "created_at": "2026-11-10T12:44:54.408Z",
+    "updated_at": "2026-11-10T12:46:45.942Z",
+    "media": [
+      {
+        "id": "693c194c-a51b-485f-b76a-1b7f0a7a751f",
+        "animal_id": "5e0d84ab-1628-4986-add9-bf6074fc060f",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794323050/pawsnhearts/animals/pt4cmfkykc39n8nlpj8x.jpg",
+        "caption": "Dug-Dug profile photo",
+        "sort_order": 0,
+        "created_at": "2026-11-10T15:07:54.070751+00:00"
+      },
+      {
+        "id": "2829a829-d129-4a18-8d2d-c31c6b4ddd8a",
+        "animal_id": "5e0d84ab-1628-4986-add9-bf6074fc060f",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794323102/pawsnhearts/animals/cf3tfngfhz7eehb4eitq.jpg",
+        "caption": "Dug-Dug rescue photo 1",
+        "sort_order": 1,
+        "created_at": "2026-11-10T15:07:54.070751+00:00"
+      },
+      {
+        "id": "450d5cfa-372b-4d60-b655-d6ad55638266",
+        "animal_id": "5e0d84ab-1628-4986-add9-bf6074fc060f",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794323103/pawsnhearts/animals/a2zy5kvrsrati6ad9yfh.jpg",
+        "caption": "Dug-Dug rescue photo 2",
+        "sort_order": 2,
+        "created_at": "2026-11-10T15:07:54.070751+00:00"
+      }
+    ]
+  },
+  {
     "id": "455ee0db-5529-455b-a044-ad436745767b",
     "name": "TinTin",
     "slug": "tintin",
@@ -19,58 +68,121 @@ export const INITIAL_ANIMALS: Animal[] = [
     "short_desc": "Tin Tin is a rescued indie dog who was tragically hit by a car in Kumarapark. She suffered a broken hip socket and urgently needs emergency surgery tomorrow to be able to walk again.",
     "full_story": "Tin Tin was adopted as a stray puppy by my cousin and grew into a deeply loved companion. Yesterday, during her regular walk in the Kumarapark neighborhood, a car came out of nowhere and hit her. We rushed her to the vet, where X-rays confirmed the heartbreaking news: her hip socket is severely broken and fractured. She is currently in a lot of pain and her surgery is scheduled for tomorrow. We are urgently trying to pool together the funds needed to cover her operation and the subsequent rehabilitation so she can get back on her feet and have a second chance at a happy life.",
     "medical_details": "X-rays confirm a broken and fractured hip socket. Emergency orthopedic surgery is scheduled for tomorrow to repair the damage. Post-operative care requires a mandatory 1-month strict bedrest period for proper healing and rehabilitation.",
-    "funds_needed": "12000.00",
+    "funds_needed": "10286.00",
     "funds_raised": "0.00",
     "hero_image": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794288260/pawsnhearts/animals/izkivbzbeocebllsifej.jpg",
     "is_featured": false,
     "sort_order": 0,
     "created_at": "2026-11-10T05:25:16.993Z",
-    "updated_at": "2026-11-10T05:25:16.993Z",
+    "updated_at": "2026-11-10T14:40:42.750Z",
     "media": [
       {
-        "id": "f83623f6-b841-4777-b90a-7fc566ddb234",
+        "id": "a2e0b9ff-bec9-48b5-ab5c-53d3c9c872e8",
         "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
         "media_type": "photo",
         "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299716/pawsnhearts/animals/xgr8qrprqwr6edary9iv.jpg",
-        "caption": "TinTin resting in bed after accident",
+        "caption": "WhatsApp Image 2026 11 09 at 20.28.14",
         "sort_order": 0,
-        "created_at": "2026-11-10T08:35:25.792Z"
+        "created_at": "2026-11-10T14:40:42.777815+00:00"
       },
       {
-        "id": "b0797efd-64f5-4ff2-a13a-c02344928fe4",
+        "id": "1906e44b-f001-4ab2-bb96-cba1d947f897",
         "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
         "media_type": "photo",
         "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299717/pawsnhearts/animals/r0yy3hsc2qumyys8etkn.jpg",
-        "caption": "TinTin injury close-up",
+        "caption": "WhatsApp Image 2026 11 09 at 20.35.09",
         "sort_order": 1,
-        "created_at": "2026-11-10T08:35:26.011Z"
+        "created_at": "2026-11-10T14:40:42.791695+00:00"
       },
       {
-        "id": "35c976c8-b3ea-429c-9a9e-eb513f32915f",
+        "id": "e4420a86-7ac6-461f-a1c7-7778ad127bf5",
         "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
         "media_type": "photo",
         "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299716/pawsnhearts/animals/pf9gyaqeaad26hsvwjql.jpg",
-        "caption": "TinTin veterinary medical assessment",
+        "caption": "WhatsApp Image 2026 11 10 at 10.48.33",
         "sort_order": 2,
-        "created_at": "2026-11-10T08:35:26.230Z"
+        "created_at": "2026-11-10T14:40:42.805292+00:00"
       },
       {
-        "id": "4bef38ea-5133-41d9-a7be-8094e20802f5",
+        "id": "37b62bbd-5712-4571-85c0-8bf6f6ab8c54",
         "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
         "media_type": "photo",
         "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794299717/pawsnhearts/animals/nc1obj2olddscbe3vqvi.jpg",
-        "caption": "TinTin comfortable in recovery bed",
+        "caption": "WhatsApp Image 2026 11 10 at 10.48.34",
         "sort_order": 3,
-        "created_at": "2026-11-10T08:35:26.449Z"
+        "created_at": "2026-11-10T14:40:42.819017+00:00"
       },
       {
-        "id": "a7cb9ee3-8753-430c-a8b4-b2a12242e89f",
+        "id": "1fe6e94a-b5ea-458f-bc8a-7bbcfb2e6a0e",
         "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
         "media_type": "video",
         "url": "https://res.cloudinary.com/dp2kretaw/video/upload/v1794299716/pawsnhearts/animals/dux3oax3aqss1feuh9if.mp4",
-        "caption": "TinTin movement & condition video",
+        "caption": "WhatsApp Video 2026 11 09 at 20.28.14",
         "sort_order": 4,
-        "created_at": "2026-11-10T08:35:26.668Z"
+        "created_at": "2026-11-10T14:40:42.833279+00:00"
+      },
+      {
+        "id": "381e4b26-c93c-40ba-9751-bc9bfc3d4a06",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794335720/pawsnhearts/animals/webrykg7t1z0uhwl6dui.jpg",
+        "caption": "WhatsApp Image 2026 11 10 at 19.48.13",
+        "sort_order": 5,
+        "created_at": "2026-11-10T14:40:42.846796+00:00"
+      },
+      {
+        "id": "d8e5d9bb-840b-460f-8b44-d43326965da4",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794335723/pawsnhearts/animals/s25iohmca1cg9zy32p7p.jpg",
+        "caption": "WhatsApp Image 2026 11 10 at 19.48.14",
+        "sort_order": 6,
+        "created_at": "2026-11-10T14:40:42.860512+00:00"
+      },
+      {
+        "id": "bb5a870d-40e1-4d1b-aa2b-0a64b7563498",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794335724/pawsnhearts/animals/ps3pf8iok8yj8q6bzzu3.jpg",
+        "caption": "WhatsApp Image 2026 11 10 at 19.48.16 (1)",
+        "sort_order": 7,
+        "created_at": "2026-11-10T14:40:42.874167+00:00"
+      },
+      {
+        "id": "251c917f-9f2e-49c8-8c9e-87ae0238bfa1",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "photo",
+        "url": "https://res.cloudinary.com/dp2kretaw/image/upload/v1794335726/pawsnhearts/animals/slzofylwbvgxjaivw2du.jpg",
+        "caption": "WhatsApp Image 2026 11 10 at 19.48.16",
+        "sort_order": 8,
+        "created_at": "2026-11-10T14:40:42.887715+00:00"
+      },
+      {
+        "id": "ef40ff88-912d-419a-8ce1-73bebb931625",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "video",
+        "url": "https://res.cloudinary.com/dp2kretaw/video/upload/v1794335731/pawsnhearts/animals/jwyvhbtdslrahsuhrusp.mp4",
+        "caption": "WhatsApp Video 2026 11 10 at 19.48.16",
+        "sort_order": 9,
+        "created_at": "2026-11-10T14:40:42.901713+00:00"
+      },
+      {
+        "id": "706e7ef5-b666-4b90-bc3b-d238b2c13649",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "video",
+        "url": "https://res.cloudinary.com/dp2kretaw/video/upload/v1794335734/pawsnhearts/animals/sbvcmptprpflb5gykbzj.mp4",
+        "caption": "WhatsApp Video 2026 11 10 at 19.48.18",
+        "sort_order": 10,
+        "created_at": "2026-11-10T14:40:42.915752+00:00"
+      },
+      {
+        "id": "054a6cc2-35a7-4764-877c-bedd138e4fbe",
+        "animal_id": "455ee0db-5529-455b-a044-ad436745767b",
+        "media_type": "video",
+        "url": "https://res.cloudinary.com/dp2kretaw/video/upload/v1794335728/pawsnhearts/animals/flc89oij2rlnazjd7yye.mp4",
+        "caption": "WhatsApp Video 2026 11 10 at 19.48.15",
+        "sort_order": 11,
+        "created_at": "2026-11-10T14:40:42.929383+00:00"
       }
     ]
   },
@@ -103,7 +215,7 @@ export const INITIAL_ANIMALS: Animal[] = [
         "url": "https://drive.google.com/thumbnail?id=1lCBFE5X6p11dOYpdbE3e8K6QhOrl786F&sz=w800",
         "caption": "Rescue Photo",
         "sort_order": 0,
-        "created_at": "2026-11-10T04:51:33.399Z"
+        "created_at": "2026-11-10T04:51:33.399601+00:00"
       }
     ]
   },
@@ -136,7 +248,7 @@ export const INITIAL_ANIMALS: Animal[] = [
         "url": "https://drive.google.com/thumbnail?id=1dmMlc17FDfpIyGcyBYTUHliZZX0A_8rF&sz=w800",
         "caption": "Rescue Photo",
         "sort_order": 0,
-        "created_at": "2026-11-10T04:51:33.842Z"
+        "created_at": "2026-11-10T04:51:33.84269+00:00"
       }
     ]
   },
@@ -169,7 +281,7 @@ export const INITIAL_ANIMALS: Animal[] = [
         "url": "https://drive.google.com/thumbnail?id=1XDOCMNwiHkbKWq-FT-E2vZKJFpXEAtAE&sz=w800",
         "caption": "Rescue Photo",
         "sort_order": 0,
-        "created_at": "2026-11-10T04:51:34.285Z"
+        "created_at": "2026-11-10T04:51:34.285146+00:00"
       }
     ]
   },
@@ -202,7 +314,7 @@ export const INITIAL_ANIMALS: Animal[] = [
         "url": "https://drive.google.com/thumbnail?id=18oZkTq3A2ybHf8N9xURpMeFO7j1WKO4Z&sz=w800",
         "caption": "Rescue Photo",
         "sort_order": 0,
-        "created_at": "2026-11-10T04:51:34.731Z"
+        "created_at": "2026-11-10T04:51:34.731018+00:00"
       }
     ]
   },
@@ -235,7 +347,7 @@ export const INITIAL_ANIMALS: Animal[] = [
         "url": "https://drive.google.com/thumbnail?id=1xv9svVcgzwi9NDpRNJrMyrSaIi7-SG_h&sz=w800",
         "caption": "Rescue Photo",
         "sort_order": 0,
-        "created_at": "2026-11-10T04:51:35.171Z"
+        "created_at": "2026-11-10T04:51:35.171001+00:00"
       }
     ]
   }

@@ -224,7 +224,7 @@ export function ThumbnailImageViewer({
       )}
 
       {/* Main Staging Display */}
-      <div className={`relative ${aspectRatio} w-full min-h-[280px] sm:min-h-[360px] md:min-h-[420px] bg-slate-950 overflow-hidden flex items-center justify-center select-none`}>
+      <div className={`relative ${aspectRatio} w-full h-[220px] xs:h-[260px] sm:h-[320px] md:h-[380px] max-h-[50vh] bg-slate-950 overflow-hidden flex items-center justify-center select-none`}>
         {/* Ambient Blurred Background for Cinematic Aspect Fill */}
         {!isVideo && currentUrl && (
           <div
@@ -459,7 +459,7 @@ export function ThumbnailImageViewer({
                 ref={isActive ? activeThumbnailRef : null}
                 type="button"
                 onClick={() => handleSelect(idx)}
-                className={`relative w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer bg-slate-950 focus:outline-none ${
+                className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer bg-slate-950 focus:outline-none ${
                   isActive
                     ? 'border-pink-500 scale-105 shadow-xl shadow-pink-500/40 ring-2 ring-pink-400/50 z-10'
                     : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'
