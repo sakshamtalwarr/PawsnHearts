@@ -183,7 +183,7 @@ export const createAnimal = async (req: Request, res: Response): Promise<void> =
       finalSlug,
       category,
       status,
-      Array.isArray(tags) ? tags : [],
+      Array.isArray(tags) ? tags : (typeof tags === 'string' ? (tags as string).split(',').map((t: string) => t.trim()).filter(Boolean) : []),
       short_desc,
       full_story,
       medical_details,
@@ -275,7 +275,9 @@ export const updateAnimal = async (req: Request, res: Response): Promise<void> =
       slug ?? cur.slug,
       category ?? cur.category,
       status ?? cur.status,
-      tags ?? cur.tags,
+      tags !== undefined
+        ? (Array.isArray(tags) ? tags : typeof tags === 'string' ? (tags as string).split(',').map((t: string) => t.trim()).filter(Boolean) : [])
+        : cur.tags,
       short_desc ?? cur.short_desc,
       full_story ?? cur.full_story,
       medical_details ?? cur.medical_details,

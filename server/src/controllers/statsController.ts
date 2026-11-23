@@ -41,7 +41,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     // Counts
     const countsRes = await query(`
       SELECT
-        COUNT(CASE WHEN category = 'treatment' AND status IN ('urgent', 'in_treatment') THEN 1 END) as active_treatments,
+        COUNT(CASE WHEN category != 'adoption' AND category != 'foster' AND status IN ('urgent', 'in_treatment') THEN 1 END) as active_treatments,
         COUNT(CASE WHEN status = 'adopted' THEN 1 END) as animals_adopted,
         COUNT(CASE WHEN status = 'recovered' THEN 1 END) as animals_recovered,
         COUNT(*) as total_rescued

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Video, Sparkles, AlertCircle, Share2, Heart, Check, Activity } from 'lucide-react';
-import { Animal, formatMediaUrl } from '../types';
+import { Animal, formatMediaUrl, getCategoryInfo } from '../types';
 import { ShareModal } from './ShareModal';
 
 interface PetCardProps {
@@ -59,7 +59,7 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
                 <AlertCircle className="w-3 h-3" /> Urgent
               </span>
             )}
-            {animal.status === 'available' && animal.category === 'adoption' && (
+            {animal.status === 'available' && getCategoryInfo(animal.category).isAdoptionType && (
               <span className="bg-pink-500 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1">
                 <span>Adopt Me</span>
                 <Heart className="w-3 h-3 fill-white" />
@@ -92,15 +92,9 @@ export const PetCard: React.FC<PetCardProps> = ({ animal, onSelect, onDonate }) 
               <h3 className="text-lg sm:text-xl font-bold text-slate-800 group-hover:text-pink-600 transition-colors truncate">
                 {animal.name}
               </h3>
-              {animal.category === 'adoption' ? (
-                <span className="text-[10px] sm:text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
-                  Adoption
-                </span>
-              ) : (
-                <span className="text-[10px] sm:text-[11px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full shrink-0">
-                  Medical Care
-                </span>
-              )}
+              <span className={`text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${getCategoryInfo(animal.category).badgeClass}`}>
+                {getCategoryInfo(animal.category).badgeLabel}
+              </span>
             </div>
 
             <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 mb-3 font-normal leading-relaxed">

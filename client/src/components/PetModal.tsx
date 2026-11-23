@@ -14,7 +14,7 @@ import {
   Play,
   Camera,
 } from 'lucide-react';
-import { Animal, AnimalMedia, formatMediaUrl, MediaType } from '../types';
+import { Animal, AnimalMedia, formatMediaUrl, MediaType, getCategoryInfo } from '../types';
 import { ShareModal } from './ShareModal';
 import ThumbnailImageViewer from './ui/thumbnail-image-viewer';
 
@@ -193,7 +193,7 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                     {isCompleted && <Sparkles className="w-5 h-5 text-pink-500" />}
                   </h2>
                   <p className="text-xs sm:text-sm font-semibold text-pink-600 mt-0.5">
-                    Category: {animal.category === 'adoption' ? 'Adoption' : 'Emergency Medical Rescue'}
+                    Category: {getCategoryInfo(animal.category).label}
                   </p>
                 </div>
 
@@ -284,10 +284,10 @@ export const PetModal: React.FC<PetModalProps> = ({ animal, onClose, onDonateFor
                   <div className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md">
                     <Check className="w-3.5 h-3.5" /> Recovered / Rehomed
                   </div>
-                ) : animal.category === 'adoption' ? (
+                ) : getCategoryInfo(animal.category).isAdoptionType ? (
                   <a
                     href={`https://wa.me/917217739614?text=${encodeURIComponent(
-                      `Hi! I am interested in adopting ${animal.name} from Paws&Hearts.`
+                      `Hi! I am interested in adopting / fostering ${animal.name} from Paws&Hearts.`
                     )}`}
                     target="_blank"
                     rel="noreferrer"

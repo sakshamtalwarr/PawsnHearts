@@ -32,7 +32,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Animal, AnimalMedia, LedgerEntry, Stats, SiteSettings, MediaType, formatMediaUrl } from '../types';
+import { Animal, AnimalMedia, LedgerEntry, Stats, SiteSettings, MediaType, formatMediaUrl, ANIMAL_CATEGORIES, getCategoryInfo } from '../types';
 import { animalsApi, ledgerApi, statsApi, uploadApi } from '../api/client';
 
 export const AdminDashboard: React.FC = () => {
@@ -69,6 +69,7 @@ export const AdminDashboard: React.FC = () => {
   // Animal Modal state
   const [isAnimalModalOpen, setIsAnimalModalOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Partial<Animal> | null>(null);
+  const [tagsInput, setTagsInput] = useState('');
 
   // Ledger Modal state (for Adding Custom or Editing Existing)
   const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
@@ -117,8 +118,8 @@ export const AdminDashboard: React.FC = () => {
   const handleOpenAddAnimal = () => {
     setEditingAnimal({
       name: '',
-      category: 'adoption',
-      status: 'available',
+      category: 'treatment',
+      status: 'urgent',
       tags: [],
       short_desc: '',
       full_story: '',
@@ -128,6 +129,18 @@ export const AdminDashboard: React.FC = () => {
       hero_image: '',
       media: [],
     });
+    setTagsInput('');
+    setIsAnimalModalOpen(true);
+  };
+
+  const handleOpenEditAnimal = (a: Animal) => {
+    setEditingAnimal(a);
+    const rawTags = Array.isArray(a.tags)
+      ? a.tags.join(', ')
+      : typeof a.tags === 'string'
+      ? a.tags
+      : '';
+    setTagsInput(rawTags);
     setIsAnimalModalOpen(true);
   };
 
@@ -137,6 +150,12 @@ export const AdminDashboard: React.FC = () => {
 
     try {
       const toSave = { ...editingAnimal };
+      // Parse tags cleanly from user input
+      toSave.tags = tagsInput
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+
       // Auto-populate hero_image if empty but media exists
       if (!toSave.hero_image?.trim() && toSave.media && toSave.media.length > 0) {
         const firstPhoto = toSave.media.find((m) => m.media_type !== 'video')?.url || toSave.media[0]?.url;
@@ -642,14 +661,11 @@ export const AdminDashboard: React.FC = () => {
 
                     <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
                       <span className="text-xs font-bold text-pink-400 font-display">
-                        {a.category.toUpperCase()} • ₹{Number(a.funds_raised || 0).toLocaleString('en-IN')} / ₹{Number(a.funds_needed || 0).toLocaleString('en-IN')}
+                        {getCategoryInfo(a.category).badgeLabel} • ₹{Number(a.funds_raised || 0).toLocaleString('en-IN')} / ₹{Number(a.funds_needed || 0).toLocaleString('en-IN')}
                       </span>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            setEditingAnimal(a);
-                            setIsAnimalModalOpen(true);
-                          }}
+                          onClick={() => handleOpenEditAnimal(a)}
                           className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
                           title="Edit"
                         >
@@ -1097,12 +1113,15 @@ export const AdminDashboard: React.FC = () => {
                 <div>
                   <label className="block text-xs font-bold text-slate-400 mb-1">Category</label>
                   <select
-                    value={editingAnimal.category || 'adoption'}
+                    value={editingAnimal.category || 'treatment'}
                     onChange={(e) => setEditingAnimal({ ...editingAnimal, category: e.target.value as any })}
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
                   >
-                    <option value="treatment">Emergency Medical Treatment</option>
-                    <option value="adoption">Adoption Case</option>
+                    {ANIMAL_CATEGORIES.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1126,16 +1145,12 @@ export const AdminDashboard: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-400 mb-1">Tags (Comma-separated)</label>
                   <input
                     type="text"
-                    value={Array.isArray(editingAnimal.tags) ? editingAnimal.tags.join(', ') : ''}
-                    onChange={(e) =>
-                      setEditingAnimal({
-                        ...editingAnimal,
-                        tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
-                      })
-                    }
+                    value={tagsInput}
+                    onChange={(e) => setTagsInput(e.target.value)}
                     placeholder="Orthopedic Surgery, Pelvic Fracture, Bengaluru Indie"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-pink-500"
                   />
+                  <span className="text-[10px] text-slate-500 mt-1 block">Separate tags with commas (e.g. Indie, Hip Fracture)</span>
                 </div>
               </div>
 
@@ -1482,7 +1497,7 @@ export const AdminDashboard: React.FC = () => {
                   <option value="">General Fund (Not linked to single dog)</option>
                   {animals.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.name} ({a.category})
+                      {a.name} ({getCategoryInfo(a.category).badgeLabel})
                     </option>
                   ))}
                 </select>

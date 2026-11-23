@@ -146,7 +146,18 @@ app.get(['/pet/:slug', '/animals/:slug', '/share/pet/:slug'], async (req, res, n
 
     const needed = Number(animal.funds_needed || 0);
     const raised = Number(animal.funds_raised || 0);
-    const categoryText = animal.category === 'treatment' ? 'Emergency Medical Rescue' : 'Adoption Case';
+    const categoryLabels: Record<string, string> = {
+      treatment: 'Emergency Medical Rescue',
+      critical_care: 'Critical ICU & Trauma Care',
+      adoption: 'Adoption Case',
+      foster: 'Foster Care',
+      senior: 'Senior Dog Care',
+      special_needs: 'Special Needs Rescue',
+      puppy: 'Puppy Rescue & Litter Care',
+      sanctuary: 'Permanent Sanctuary Care',
+      sterilization: 'ABC & Sterilization Drive',
+    };
+    const categoryText = categoryLabels[animal.category] || (animal.category || 'Rescue Case').replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
 
     const title = `🐾 Help ${animal.name} - ${categoryText} | Paws&Hearts Bengaluru`;
     const description = `${animal.short_desc || animal.medical_details || animal.full_story?.slice(0, 200)} ${

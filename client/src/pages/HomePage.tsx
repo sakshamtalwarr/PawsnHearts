@@ -9,7 +9,7 @@ import { LedgerSection } from '../components/LedgerSection';
 import { SuccessStories } from '../components/SuccessStories';
 import { Footer } from '../components/Footer';
 import { PlayfulPets, PetDivider } from '../components/PlayfulPets';
-import { Animal, Stats, SiteSettings } from '../types';
+import { Animal, Stats, SiteSettings, getCategoryInfo } from '../types';
 import { animalsApi, statsApi } from '../api/client';
 import { Heart, Activity, Wifi, Camera, X, Sparkles } from 'lucide-react';
 import ThumbnailImageViewer from '../components/ui/thumbnail-image-viewer';
@@ -46,9 +46,7 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     if (selectedAnimal) {
-      document.title = `Help ${selectedAnimal.name} - ${
-        selectedAnimal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'
-      } | Paws&Hearts`;
+      document.title = `Help ${selectedAnimal.name} - ${getCategoryInfo(selectedAnimal.category).label} | Paws&Hearts`;
     } else {
       document.title = 'Paws&Hearts Bengaluru - Giving Every Street Dog A Second Chance';
     }
@@ -135,11 +133,11 @@ export const HomePage: React.FC = () => {
   };
 
   const adoptionAnimals = animals.filter(
-    (a) => a.category === 'adoption' && a.status !== 'adopted' && a.status !== 'recovered'
+    (a) => getCategoryInfo(a.category).isAdoptionType && a.status !== 'adopted' && a.status !== 'recovered'
   );
 
   const treatmentAnimals = animals.filter(
-    (a) => a.category === 'treatment' && a.status !== 'recovered' && a.status !== 'adopted'
+    (a) => !getCategoryInfo(a.category).isAdoptionType && a.status !== 'recovered' && a.status !== 'adopted'
   );
 
   // Dynamically select the most recently added urgent case or active medical case

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Share2, Copy, Check, MessageCircle, ExternalLink, Heart } from 'lucide-react';
-import { Animal } from '../types';
+import { Animal, getCategoryInfo } from '../types';
 
 interface ShareModalProps {
   animal?: Animal | null;
@@ -21,7 +21,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ animal, isOpen, onClose 
     : `${origin}`;
 
   const shareTitle = isPet && animal
-    ? `Help ${animal.name} - ${animal.category === 'treatment' ? 'Emergency Surgery Fund' : 'Adopt a Friend'}`
+    ? `Help ${animal.name} - ${getCategoryInfo(animal.category).label}`
     : 'Paws&Hearts - 100% Transparent Community Dog Rescue in Bengaluru';
 
   const shareText = isPet && animal
