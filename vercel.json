@@ -20,10 +20,12 @@
   },
   "rewrites": [
     {
+      "source": "/uploads/(.*)",
+      "destination": "https://paws.129.225.67.149.sslip.io/uploads/$1"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": {
-        "service": "server"
-      }
+      "destination": "https://paws.129.225.67.149.sslip.io/api/$1"
     },
     {
       "source": "/pet/:slug",

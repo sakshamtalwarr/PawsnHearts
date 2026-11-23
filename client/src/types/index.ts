@@ -165,7 +165,14 @@ export interface AdminUser {
 
 export function formatMediaUrl(url?: string): string {
   if (!url) return 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800';
-  const cleanUrl = url.trim();
+  let cleanUrl = url.trim();
+  if (cleanUrl.startsWith('uploads/')) {
+    cleanUrl = '/' + cleanUrl;
+  }
+  if (cleanUrl.startsWith('/uploads/')) {
+    const backendBase = (import.meta.env.VITE_API_URL || 'https://paws.129.225.67.149.sslip.io').replace(/\/$/, '');
+    return `${backendBase}${cleanUrl}`;
+  }
   if (cleanUrl.includes('drive.google.com')) {
     const match = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || cleanUrl.match(/id=([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
