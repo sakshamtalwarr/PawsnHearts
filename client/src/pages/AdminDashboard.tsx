@@ -59,7 +59,7 @@ export const AdminDashboard: React.FC = () => {
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
-    upi_id: 'salesabshappypaws@oksbi',
+    upi_id: '9650026185@mbkns',
     payee_name: 'PawsAndHearts',
     contact_phone: '+91 7217739614',
     contact_location: 'BLR, India',

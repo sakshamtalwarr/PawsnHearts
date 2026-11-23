@@ -27,7 +27,7 @@ interface DonationSectionProps {
 }
 
 export const DonationSection: React.FC<DonationSectionProps> = ({
-  upiId = 'salesabshappypaws@oksbi',
+  upiId = '9650026185@mbkns',
   payeeName = 'PawsAndHearts',
   activeAnimalName,
   onClearActiveAnimal,
@@ -359,19 +359,22 @@ export const DonationSection: React.FC<DonationSectionProps> = ({
               {activeTab === 'qr' && (
                 <div className="flex flex-col items-center p-3 sm:p-4 bg-pink-50/50 rounded-2xl border border-pink-100 text-center">
                   <div className="bg-white p-2.5 sm:p-3 rounded-2xl shadow-md border border-pink-100 mb-2">
-                    {qrDataUrl ? (
-                      <img src={qrDataUrl} alt="Donation QR Code" className="w-40 h-40 sm:w-48 sm:h-48 mx-auto" />
-                    ) : (
-                      <div className="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center text-xs text-slate-400">
-                        Generating QR...
-                      </div>
-                    )}
+                    <img
+                      src="/upi-qr.jpg"
+                      alt="Official Donation UPI QR Code"
+                      className="w-44 h-44 sm:w-52 sm:h-52 object-contain mx-auto rounded-lg"
+                      onError={(e) => {
+                        if (qrDataUrl) {
+                          (e.target as HTMLImageElement).src = qrDataUrl;
+                        }
+                      }}
+                    />
                   </div>
                   <p className="text-xs font-bold text-slate-700">
                     Scan with Google Pay, PhonePe, Paytm, or BHIM
                   </p>
                   <p className="text-[11px] text-pink-600 font-semibold mt-0.5">
-                    Preloaded with ₹{amount || 0} {activeAnimalName ? `for ${activeAnimalName}` : ''}
+                    UPI ID: <span className="font-mono font-bold">{upiId}</span>
                   </p>
                 </div>
               )}

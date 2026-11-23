@@ -32,7 +32,7 @@ export const fallbackStore = {
     role: 'admin',
   },
   settings: {
-    upi_id: 'salesabshappypaws@oksbi',
+    upi_id: '9650026185@mbkns',
     payee_name: 'PawsAndHearts',
     contact_phone: '+91 7217739614',
     contact_location: 'BLR, India',

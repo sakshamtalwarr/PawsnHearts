@@ -1,6 +1,8 @@
 import { Animal, LedgerEntry, Stats, SiteSettings, AdminUser } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 export function getToken(): string | null {
   return localStorage.getItem('paws_admin_token');

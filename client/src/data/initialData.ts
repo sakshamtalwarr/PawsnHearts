@@ -619,7 +619,7 @@ export const INITIAL_STATS: Stats = {
 };
 
 export const INITIAL_SETTINGS: SiteSettings = {
-  upi_id: "salesabshappypaws@oksbi",
+  upi_id: "9650026185@mbkns",
   payee_name: "PawsAndHearts",
   contact_phone: "+91 7217739614",
   contact_location: "BLR, India",

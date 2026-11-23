@@ -17,7 +17,9 @@ async function ensureDbInitialized() {
     const res = await query("SELECT to_regclass('public.animals') as tbl_exists");
     if (!res.rows[0]?.tbl_exists) {
       console.log('🔄 Initializing database tables on first launch...');
-      const schemaPath = path.join(__dirname, 'db/schema.sql');
+      const schemaPath = fs.existsSync(path.join(__dirname, 'db/schema.sql'))
+        ? path.join(__dirname, 'db/schema.sql')
+        : path.join(__dirname, '../src/db/schema.sql');
       if (fs.existsSync(schemaPath)) {
         const sql = fs.readFileSync(schemaPath, 'utf8');
         await query(sql);
@@ -44,6 +46,7 @@ const PORT = process.env.PORT || 5001;
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://pawsnhearts.vercel.app',
   process.env.CLIENT_URL,
 ].filter(Boolean) as string[];
 

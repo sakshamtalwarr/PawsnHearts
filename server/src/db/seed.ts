@@ -25,7 +25,7 @@ async function seed() {
 
     // 2. Seed Default Site Settings
     const defaultSettings = [
-      { key: 'upi_id', value: 'salesabshappypaws@oksbi' },
+      { key: 'upi_id', value: '9650026185@mbkns' },
       { key: 'payee_name', value: 'PawsAndHearts' },
       { key: 'contact_phone', value: '+91 7217739614' },
       { key: 'contact_location', value: 'BLR, India' },
